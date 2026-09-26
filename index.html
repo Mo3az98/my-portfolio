@@ -4502,8 +4502,8 @@
     var lineColor = points[points.length-1].price >= points[0].price ? "#00d964" : "#ff453a";
     var d = coords.map(function(c,i){ return (i===0?"M":"L")+c[0].toFixed(1)+","+c[1].toFixed(1); }).join(" ");
     svg.innerHTML = '<path d="'+d+'" fill="none" stroke="'+lineColor+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
-    var firstDate = new Date(points[0].date).toLocaleDateString(localeCode(),{month:"short",day:"numeric"});
-    var lastDate = new Date(points[points.length-1].date).toLocaleDateString(localeCode(),{month:"short",day:"numeric"});
+    var firstDate = new Date(points[0].date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
+    var lastDate = new Date(points[points.length-1].date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
     document.getElementById(labelsId).innerHTML = '<span>'+firstDate+'</span><span>'+lastDate+'</span>';
     return true;
   }
