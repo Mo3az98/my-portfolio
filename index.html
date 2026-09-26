@@ -236,7 +236,9 @@
   .detail-price-row .right{ text-align:right; padding-top:4px; }
   .detail-price-row .chg-pct{ font-size:0.86rem; font-weight:700; color:var(--text-muted); }
   .detail-price-row .chg-amt{ font-size:0.95rem; font-weight:700; margin-top:2px; }
-  .detail-mini-chart{ margin:10px -4px 4px; }
+  .detail-mini-chart{ margin:10px -4px 4px; position:relative; }
+  .chart-tooltip{ position:absolute; top:0; transform:translateX(-50%); background:var(--surface-3); border:1px solid var(--hairline); border-radius:10px; padding:5px 9px; font-family:'Inter',sans-serif; font-size:0.72rem; font-weight:700; white-space:nowrap; pointer-events:none; display:none; z-index:5; }
+  .chart-tooltip .ct-date{ color:var(--text-faint); font-weight:600; font-size:0.66rem; }
   .detail-mini-chart svg{ width:100%; height:auto; display:block; }
   .dmc-labels{ display:flex; justify-content:space-between; color:var(--text-faint); font-size:0.72rem; margin-top:6px; font-weight:600; }
   .dtab-btn{ flex:1; background:none; border:none; color:var(--text-muted); font-family:'Inter',sans-serif; font-size:0.85rem; font-weight:600; padding:9px 4px; border-radius:999px; cursor:pointer; }
@@ -392,6 +394,7 @@
   .search-fab.active{ color:var(--bg); background:var(--text); }
 
   .overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.75); display:none; align-items:flex-end; justify-content:center; z-index:50; padding-bottom:env(safe-area-inset-bottom,0px); }
+  #confirmOverlay{ z-index:200; }
   .overlay.open{ display:flex; }
   .modal{ background:var(--surface); border:1px solid var(--hairline); border-top-left-radius:22px; border-top-right-radius:22px; width:100%; max-width:520px; padding:22px 20px calc(26px + env(safe-area-inset-bottom,0px)); max-height:86vh; overflow-y:auto; }
   .modal h3{ font-weight:800; font-size:1.2rem; margin:0 0 18px; display:flex; justify-content:space-between; align-items:center; letter-spacing:-0.01em; }
@@ -816,7 +819,7 @@
       </div>
     </div>
 
-    <div class="detail-mini-chart" id="detailChartWrap"><svg viewBox="0 0 320 70" id="detailChartSvg"></svg>
+    <div class="detail-mini-chart" id="detailChartWrap"><svg viewBox="0 0 320 70" id="detailChartSvg"></svg><div class="chart-tooltip" id="detailChartTooltip"><div id="detailChartTooltipPrice"></div><div class="ct-date" id="detailChartTooltipDate"></div></div>
       <div class="dmc-labels" id="detailChartLabels"><span data-i18n="avg_cost">Avg cost</span><span data-i18n="current_price">Current price</span></div>
     </div>
     <div class="year-scroll" id="detailHistRange" style="margin:10px 0 4px;"></div>
@@ -1222,7 +1225,7 @@
     <div style="display:flex; align-items:baseline; gap:8px; margin-bottom:10px;">
       <span style="font-weight:800; font-size:1.6rem;" id="siPrice" class="num">—</span>
     </div>
-    <div class="detail-mini-chart" id="siChartWrap"><svg viewBox="0 0 320 70" id="siChartSvg"></svg>
+    <div class="detail-mini-chart" id="siChartWrap"><svg viewBox="0 0 320 70" id="siChartSvg"></svg><div class="chart-tooltip" id="siChartTooltip"><div id="siChartTooltipPrice"></div><div class="ct-date" id="siChartTooltipDate"></div></div>
       <div class="dmc-labels" id="siChartLabels"></div>
     </div>
     <div class="year-scroll" id="siHistRange" style="margin:10px 0 4px;"></div>
@@ -1519,7 +1522,7 @@
       ask_about_numbers:"Ask about your numbers…",
       q_mover:"Which holding has gained the most?", q_diversified:"Am I well diversified?",
       q_growth:"How is my net worth projected to grow?", q_goal:"Am I on pace for my goals?",
-      cancel:"Cancel", confirm_ok:"Confirm", watchlist:"Watchlist", popular_stocks:"Popular stocks",
+      cancel:"Cancel", confirm_ok:"Confirm", ok:"OK", watchlist:"Watchlist", popular_stocks:"Popular stocks",
       new_watchlist:"New watchlist", watchlist_name_ph:"e.g. Dividend picks, Tech watch", create_watchlist:"Create watchlist",
       tap_star_desc:"Tap the star to add or remove a stock from your watchlist.",
       results:"Results", search_watchlist_ph:"Search to add to your watchlist",
@@ -1718,7 +1721,7 @@
       ask_about_numbers:"اسأل عن أرقامك…",
       q_mover:"أي سهم حقق أكبر ربح؟", q_diversified:"هل محفظتي متنوعة بشكل جيد؟",
       q_growth:"كيف يُتوقع أن ينمو صافي ثروتي؟", q_goal:"هل أنا على المسار الصحيح لأهدافي؟",
-      cancel:"إلغاء", confirm_ok:"تأكيد", watchlist:"قائمة المتابعة", popular_stocks:"أسهم شائعة",
+      cancel:"إلغاء", confirm_ok:"تأكيد", ok:"موافق", watchlist:"قائمة المتابعة", popular_stocks:"أسهم شائعة",
       new_watchlist:"قائمة متابعة جديدة", watchlist_name_ph:"مثال: أسهم أرباح موزعة، متابعة التقنية", create_watchlist:"إنشاء القائمة",
       tap_star_desc:"اضغط على النجمة لإضافة أو إزالة سهم من قائمة متابعتك.",
       results:"النتائج", search_watchlist_ph:"ابحث لإضافته لقائمة المتابعة",
@@ -2589,6 +2592,9 @@
       document.getElementById("confirmMessage").textContent = message;
       var okBtn = document.getElementById("confirmOkBtn");
       var cancelBtn = document.getElementById("confirmCancelBtn");
+      cancelBtn.style.display = "block";
+      okBtn.className = "btn danger";
+      okBtn.textContent = t("confirm_ok");
       function cleanup(result){
         confirmOverlay.classList.remove("open");
         okBtn.removeEventListener("click", onOk);
@@ -2604,6 +2610,24 @@
       confirmOverlay.addEventListener("click", onBackdrop);
       confirmOverlay.classList.add("open");
     });
+  }
+  function showNotice(message){
+    document.getElementById("confirmMessage").textContent = message;
+    var okBtn = document.getElementById("confirmOkBtn");
+    var cancelBtn = document.getElementById("confirmCancelBtn");
+    cancelBtn.style.display = "none";
+    okBtn.className = "btn primary";
+    okBtn.textContent = t("ok");
+    function cleanup(){
+      confirmOverlay.classList.remove("open");
+      okBtn.removeEventListener("click", onOk);
+      confirmOverlay.removeEventListener("click", onBackdrop);
+    }
+    function onOk(){ cleanup(); }
+    function onBackdrop(e){ if(e.target===confirmOverlay) cleanup(); }
+    okBtn.addEventListener("click", onOk);
+    confirmOverlay.addEventListener("click", onBackdrop);
+    confirmOverlay.classList.add("open");
   }
 
   function optionsFromSelect(selectEl){
@@ -2921,7 +2945,7 @@
   watchlistNameOverlay.addEventListener("click", function(e){ if(e.target===watchlistNameOverlay) watchlistNameOverlay.classList.remove("open"); });
   document.getElementById("saveWatchlistNameBtn").addEventListener("click", function(){
     var name = document.getElementById("watchlistNameInput").value.trim();
-    if(!name){ alert(t("enter_watchlist_name")); return; }
+    if(!name){ showNotice(t("enter_watchlist_name")); return; }
     var wl = { id: uid(), name: name };
     state.watchlists.push(wl);
     save();
@@ -3097,7 +3121,7 @@
       if(result && result.updated){
         // live prices applied silently — figures already reflect them after renderAll
       } else if(state.sheetWebAppUrl && state.holdings.length>0 && result && result.failed){
-        alert(t("couldnt_fetch_sheet_prices"));
+        showNotice(t("couldnt_fetch_sheet_prices"));
       }
     });
   }
@@ -3569,7 +3593,7 @@
   portfolioOverlay.addEventListener("click", function(e){ if(e.target===portfolioOverlay) portfolioOverlay.classList.remove("open"); });
   document.getElementById("savePortfolioBtn").addEventListener("click", function(){
     var name = document.getElementById("portfolioName").value.trim();
-    if(!name){ alert(t("enter_currency_name")); return; }
+    if(!name){ showNotice(t("enter_currency_name")); return; }
     if(portfolioModalMode === "rename"){
       var p = state.portfolios.find(function(x){ return x.id === selectedPortfolioId; });
       if(p) p.name = name;
@@ -3854,13 +3878,13 @@
     reader.onload = function(){
       var rows = parseCsv(String(reader.result));
       e.target.value = "";
-      if(rows.length < 2){ alert(t("csv_no_valid_rows")); return; }
+      if(rows.length < 2){ showNotice(t("csv_no_valid_rows")); return; }
       var header = rows[0].map(function(h){ return h.trim().toLowerCase(); });
       var idxTicker = header.indexOf("ticker");
       var idxDate = header.indexOf("date");
       var idxAmount = header.indexOf("amount");
       var idxStatus = header.indexOf("status");
-      if(idxTicker===-1 || idxDate===-1 || idxAmount===-1){ alert(t("csv_no_valid_rows")); return; }
+      if(idxTicker===-1 || idxDate===-1 || idxAmount===-1){ showNotice(t("csv_no_valid_rows")); return; }
       pendingCsvRows = [];
       for(var i=1; i<rows.length; i++){
         var r = rows[i];
@@ -3903,7 +3927,7 @@
     csvPreviewOverlay.classList.remove("open");
     pendingCsvRows = [];
     renderAll();
-    alert(tf("csv_import_done_tpl", { count: matched.length }));
+    showNotice(tf("csv_import_done_tpl", { count: matched.length }));
   });
 
   function renderBarChart(filtered){
@@ -4270,8 +4294,8 @@
     var taxes = parseFloat(document.getElementById("hTaxes").value) || 0;
     var description = document.getElementById("hDescription").value.trim();
 
-    if(!editingHoldingId && !pendingSecurity){ alert(t("choose_security_alert")); return null; }
-    if(!date || isNaN(units) || units<=0 || isNaN(price) || price<0){ alert(t("enter_units_price")); return null; }
+    if(!editingHoldingId && !pendingSecurity){ showNotice(t("choose_security_alert")); return null; }
+    if(!date || isNaN(units) || units<=0 || isNaN(price) || price<0){ showNotice(t("enter_units_price")); return null; }
 
     var h;
     if(editingHoldingId){
@@ -4407,7 +4431,7 @@
   document.getElementById("secManualConfirmBtn").addEventListener("click", function(){
     var ticker = document.getElementById("secManualTicker").value.trim().toUpperCase();
     var name = document.getElementById("secManualName").value.trim();
-    if(!ticker){ alert(t("enter_ticker")); return; }
+    if(!ticker){ showNotice(t("enter_ticker")); return; }
     pendingSecurity = { ticker:ticker, name: name || ticker, sector: "Other" };
     setSecurityDisplay(ticker, name || ticker);
     document.getElementById("hSector").value = "Other";
@@ -4428,7 +4452,7 @@
   document.getElementById("saveUpdatePriceBtn").addEventListener("click", function(){
     var h = state.holdings.find(function(x){return x.id===editingHoldingId;});
     var price = parseFloat(document.getElementById("upPrice").value);
-    if(!h || isNaN(price) || price<0){ alert(t("enter_valid_price")); return; }
+    if(!h || isNaN(price) || price<0){ showNotice(t("enter_valid_price")); return; }
     h.currentPrice = price;
     save();
     updatePriceOverlay.classList.remove("open");
@@ -4485,10 +4509,15 @@
       '<circle cx="'+(w-pad)+'" cy="'+yB+'" r="4" fill="'+lineColor+'"/>';
     document.getElementById("detailChartLabels").innerHTML = '<span data-i18n="avg_cost">'+t("avg_cost")+'</span><span data-i18n="current_price">'+t("current_price")+'</span>';
   }
-  function drawRealHistoryChart(points, svgId, labelsId){
+  function drawRealHistoryChart(rawPoints, svgId, labelsId, currency){
     svgId = svgId || "detailChartSvg"; labelsId = labelsId || "detailChartLabels";
+    var tooltipPrefix = svgId === "siChartSvg" ? "si" : "detail";
     var svg = document.getElementById(svgId);
     var w=320, h2=70, pad=8;
+    var points = rawPoints.filter(function(p){
+      var t = new Date(p.date).getTime();
+      return !isNaN(t) && t > 31536000000 && typeof p.price === "number" && isFinite(p.price) && p.price > 0;
+    });
     if(points.length < 2){ return false; }
     var prices = points.map(function(p){ return p.price; });
     var minP = Math.min.apply(null, prices), maxP = Math.max.apply(null, prices);
@@ -4501,11 +4530,45 @@
     });
     var lineColor = points[points.length-1].price >= points[0].price ? "#00d964" : "#ff453a";
     var d = coords.map(function(c,i){ return (i===0?"M":"L")+c[0].toFixed(1)+","+c[1].toFixed(1); }).join(" ");
-    svg.innerHTML = '<path d="'+d+'" fill="none" stroke="'+lineColor+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+    svg.innerHTML =
+      '<path d="'+d+'" fill="none" stroke="'+lineColor+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<line id="'+tooltipPrefix+'CrosshairLine" x1="0" y1="0" x2="0" y2="'+h2+'" stroke="var(--text-faint)" stroke-width="1" stroke-dasharray="2,2" style="display:none;"/>' +
+      '<circle id="'+tooltipPrefix+'CrosshairDot" r="4" fill="'+lineColor+'" stroke="var(--bg)" stroke-width="1.5" style="display:none;"/>';
     var firstDate = new Date(points[0].date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
     var lastDate = new Date(points[points.length-1].date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
     document.getElementById(labelsId).innerHTML = '<span>'+firstDate+'</span><span>'+lastDate+'</span>';
+    attachChartTooltip(svg, coords, points, tooltipPrefix, currency || "$");
     return true;
+  }
+  function attachChartTooltip(svg, coords, points, prefix, currency){
+    var w=320;
+    var line = document.getElementById(prefix+"CrosshairLine");
+    var dot = document.getElementById(prefix+"CrosshairDot");
+    var tooltip = document.getElementById(prefix+"ChartTooltip");
+    var priceEl = document.getElementById(prefix+"ChartTooltipPrice");
+    var dateEl = document.getElementById(prefix+"ChartTooltipDate");
+    function showAt(clientX){
+      var rect = svg.getBoundingClientRect();
+      var relX = (clientX - rect.left) / rect.width * w;
+      var idx = 0, best = Infinity;
+      coords.forEach(function(c, i){ var diff = Math.abs(c[0]-relX); if(diff < best){ best = diff; idx = i; } });
+      var c = coords[idx], p = points[idx];
+      line.setAttribute("x1", c[0]); line.setAttribute("x2", c[0]); line.style.display = "block";
+      dot.setAttribute("cx", c[0]); dot.setAttribute("cy", c[1]); dot.style.display = "block";
+      priceEl.textContent = fmtIn(p.price, currency);
+      dateEl.textContent = new Date(p.date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
+      var pctX = (c[0]/w) * rect.width;
+      tooltip.style.left = Math.max(30, Math.min(rect.width-30, pctX)) + "px";
+      tooltip.style.display = "block";
+    }
+    function hide(){ line.style.display = "none"; dot.style.display = "none"; tooltip.style.display = "none"; }
+    svg.onpointerdown = function(e){ e.preventDefault(); showAt(e.clientX); };
+    svg.onpointermove = function(e){ if(e.buttons > 0 || e.pointerType === "mouse") showAt(e.clientX); };
+    svg.onpointerup = hide;
+    svg.onpointerleave = hide;
+    svg.onmousemove = function(e){ showAt(e.clientX); };
+    svg.onmouseleave = hide;
+    svg.style.touchAction = "pan-y";
   }
   function renderDetailHistRange(){
     var wrap = document.getElementById("detailHistRange");
@@ -4525,6 +4588,7 @@
   function loadDetailHistory(days){
     var h = state.holdings.find(function(x){ return x.id === currentDetailId; });
     if(!h) return;
+    var hCurr = currencyForTicker(h.ticker);
     var note = document.getElementById("detailHistNote");
     if(!state.sheetWebAppUrl){
       drawSimpleFallbackChart(h);
@@ -4533,7 +4597,7 @@
     }
     var cacheKey = h.ticker + "_" + days;
     if(stockHistoryCache[cacheKey]){
-      var ok = drawRealHistoryChart(stockHistoryCache[cacheKey]);
+      var ok = drawRealHistoryChart(stockHistoryCache[cacheKey], "detailChartSvg", "detailChartLabels", hCurr);
       note.textContent = ok ? "" : t("hist_no_data");
       if(!ok) drawSimpleFallbackChart(h);
       return;
@@ -4548,7 +4612,7 @@
         return;
       }
       stockHistoryCache[cacheKey] = data;
-      var ok = drawRealHistoryChart(data);
+      var ok = drawRealHistoryChart(data, "detailChartSvg", "detailChartLabels", hCurr);
       note.textContent = ok ? "" : t("hist_no_data");
       if(!ok) drawSimpleFallbackChart(h);
     }).catch(function(){
@@ -4578,6 +4642,7 @@
   }
   function loadSiHistory(ticker, days){
     var note = document.getElementById("siHistNote");
+    var siCurr = currencyForTicker(ticker);
     document.getElementById("siChartSvg").innerHTML = "";
     document.getElementById("siChartLabels").innerHTML = "";
     if(!state.sheetWebAppUrl){
@@ -4586,7 +4651,7 @@
     }
     var cacheKey = ticker + "_" + days;
     if(stockHistoryCache[cacheKey]){
-      var ok = drawRealHistoryChart(stockHistoryCache[cacheKey], "siChartSvg", "siChartLabels");
+      var ok = drawRealHistoryChart(stockHistoryCache[cacheKey], "siChartSvg", "siChartLabels", siCurr);
       note.textContent = ok ? "" : t("hist_no_data");
       return;
     }
@@ -4596,7 +4661,7 @@
       if(siCurrentTicker !== ticker || siSelectedRangeDays !== days) return;
       if(!Array.isArray(data) || data.length < 2){ note.textContent = t("hist_no_data"); return; }
       stockHistoryCache[cacheKey] = data;
-      var ok = drawRealHistoryChart(data, "siChartSvg", "siChartLabels");
+      var ok = drawRealHistoryChart(data, "siChartSvg", "siChartLabels", siCurr);
       note.textContent = ok ? "" : t("hist_no_data");
     }).catch(function(){
       if(siCurrentTicker !== ticker || siSelectedRangeDays !== days) return;
@@ -4765,7 +4830,7 @@
   // ---------- Dividend modal ----------
   var divOverlay = document.getElementById("divOverlay");
   function openDividendModal(preselectId){
-    if(state.holdings.length===0){ alert(t("add_holding_first")); return; }
+    if(state.holdings.length===0){ showNotice(t("add_holding_first")); return; }
     var sel=document.getElementById("dHolding"); sel.innerHTML="";
     state.holdings.forEach(function(h){
       var opt=document.createElement("option"); opt.value=h.id; opt.textContent=h.ticker+(h.name?" — "+h.name:"");
@@ -4789,7 +4854,7 @@
     var date=document.getElementById("dDate").value;
     var amount=parseFloat(document.getElementById("dAmount").value);
     var status=document.getElementById("dStatus").value;
-    if(!date||isNaN(amount)||amount<=0){ alert(t("enter_date_amount")); return; }
+    if(!date||isNaN(amount)||amount<=0){ showNotice(t("enter_date_amount")); return; }
     state.dividends.push({id:uid(),holdingId:holdingId,date:date,amount:amount,status:status});
     save(); divOverlay.classList.remove("open");
     selectedYear = new Date(date).getFullYear();
@@ -4857,7 +4922,7 @@
     var type = document.getElementById("cTxnType").value;
     var date = document.getElementById("cTxnDate").value;
     var amount = parseFloat(document.getElementById("cAmount").value);
-    if(!date || isNaN(amount) || amount<=0){ alert(t("enter_date_amount")); return; }
+    if(!date || isNaN(amount) || amount<=0){ showNotice(t("enter_date_amount")); return; }
 
     var c = state.cash.find(function(x){return x.id===editingCashId;});
     if(!c.transactions) c.transactions = [];
@@ -4972,8 +5037,8 @@
     var date = document.getElementById("lDate").value;
     var amount = parseFloat(document.getElementById("lAmount").value);
     var description = document.getElementById("lDescription").value.trim();
-    if(!accountName){ alert(t("enter_account_name")); return; }
-    if(!date || isNaN(amount) || amount<=0){ alert(t("enter_date_amount")); return; }
+    if(!accountName){ showNotice(t("enter_account_name")); return; }
+    if(!date || isNaN(amount) || amount<=0){ showNotice(t("enter_date_amount")); return; }
 
     var l;
     if(editingLiabId){
@@ -5036,7 +5101,7 @@
     var name=document.getElementById("gName").value.trim();
     var targetAmount=parseFloat(document.getElementById("gTarget").value);
     var targetYear=parseInt(document.getElementById("gYear").value);
-    if(!name||isNaN(targetAmount)||targetAmount<=0||isNaN(targetYear)){ alert(t("enter_goal_fields")); return; }
+    if(!name||isNaN(targetAmount)||targetAmount<=0||isNaN(targetYear)){ showNotice(t("enter_goal_fields")); return; }
     if(editingGoalId){
       var g=state.goals.find(function(x){return x.id===editingGoalId;});
       g.name=name; g.targetAmount=targetAmount; g.targetYear=targetYear;
@@ -5061,7 +5126,7 @@
   mgoalOverlay.addEventListener("click", function(e){ if(e.target===mgoalOverlay) mgoalOverlay.classList.remove("open"); });
   document.getElementById("saveMgoalBtn").addEventListener("click", function(){
     var amt = parseFloat(document.getElementById("mgAmount").value);
-    if(isNaN(amt)||amt<0){ alert(t("enter_monthly_amount")); return; }
+    if(isNaN(amt)||amt<0){ showNotice(t("enter_monthly_amount")); return; }
     state.monthlyGoal = amt;
     save(); mgoalOverlay.classList.remove("open"); renderAll();
   });
@@ -5073,7 +5138,7 @@
   document.getElementById("saveContribBtn").addEventListener("click", function(){
     var month = document.getElementById("ctMonth").value;
     var amount = parseFloat(document.getElementById("ctAmount").value);
-    if(!month||isNaN(amount)||amount<=0){ alert(t("enter_month_amount")); return; }
+    if(!month||isNaN(amount)||amount<=0){ showNotice(t("enter_month_amount")); return; }
     state.contributions.push({id:uid(),month:month,amount:amount});
     save(); contribOverlay.classList.remove("open"); renderAll();
   });
@@ -5130,7 +5195,7 @@
   appLockSetupOverlay.addEventListener("click", function(e){ if(e.target===appLockSetupOverlay) appLockSetupOverlay.classList.remove("open"); });
   document.getElementById("saveAppLockBtn").addEventListener("click", function(){
     var pin = document.getElementById("appLockPinInput").value.trim();
-    if(!/^[0-9]{4}$/.test(pin)){ alert(t("pin_must_be_4_digits")); return; }
+    if(!/^[0-9]{4}$/.test(pin)){ showNotice(t("pin_must_be_4_digits")); return; }
     setLockPin(pin);
     refreshAppLockTrailing();
     appLockSetupOverlay.classList.remove("open");
@@ -5249,10 +5314,10 @@
     var reader = new FileReader();
     reader.onload = function(){
       var parsed;
-      try{ parsed = JSON.parse(reader.result); }catch(err){ alert(t("restore_invalid_file")); e.target.value=""; return; }
+      try{ parsed = JSON.parse(reader.result); }catch(err){ showNotice(t("restore_invalid_file")); e.target.value=""; return; }
       var incoming = parsed && parsed.state ? parsed.state : parsed;
       if(!incoming || typeof incoming !== "object" || !Array.isArray(incoming.holdings)){
-        alert(t("restore_invalid_file")); e.target.value=""; return;
+        showNotice(t("restore_invalid_file")); e.target.value=""; return;
       }
       openConfirm(t("confirm_restore_backup")).then(function(ok){
         if(!ok){ e.target.value=""; return; }
@@ -5281,7 +5346,7 @@
         e.target.value = "";
         settingsOverlay.classList.remove("open");
         renderAll();
-        alert(t("restore_success"));
+        showNotice(t("restore_success"));
       });
     };
     reader.readAsText(file);
