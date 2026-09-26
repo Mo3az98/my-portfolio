@@ -553,8 +553,13 @@
     </div>
 
     <div class="home-chart-wrap"><svg viewBox="0 0 320 90" id="homeChartSvg"></svg></div>
-    <div class="chart-meta" data-i18n="chart_meta">Net worth history, from what you've logged</div>
+    <div class="chart-meta" id="homeChartCaption" data-i18n="chart_meta">Net worth history, from what you've logged</div>
     <div class="chart-meta num" id="yearAgoCompare" style="margin-top:2px;"></div>
+
+    <div class="year-scroll" id="chartModeToggle" style="margin-top:12px;">
+      <button data-mode="activity" class="active" data-i18n="chart_mode_activity">My activity</button>
+      <button data-mode="market" data-i18n="chart_mode_market">Market performance</button>
+    </div>
 
     <div class="wealth-card" id="memoryCard" style="display:none; margin-top:16px;">
       <div class="wealth-card-head"><h2 id="memoryCardTitle" data-i18n="on_this_day">On this day, last year</h2></div>
@@ -568,6 +573,11 @@
       <button data-range="YTD">YTD</button>
       <button data-range="1Y">1Y</button>
       <button data-range="MAX">Max</button>
+    </div>
+    <div class="range-tabs" id="marketRangeTabs" style="display:none;">
+      <button data-mrange="1M" class="active">1M</button>
+      <button data-mrange="3M">3M</button>
+      <button id="marketRefreshBtn" style="margin-inline-start:auto;">↻</button>
     </div>
 
     <div class="onboard-card" id="onboardCard">
@@ -1464,6 +1474,13 @@
       sub_overview:"Overview", sub_investments:"Investments", sub_cash:"Cash", sub_liabilities:"Liabilities",
       total_net_worth:"Total net worth", hide:"Hide", show:"Show", update:"Update",
       chart_meta:"Built from your transaction dates, at today's prices — not day-to-day market moves",
+      chart_mode_activity:"My activity", chart_mode_market:"Market performance",
+      chart_meta_market:"Built from real historical prices for your current holdings.",
+      market_perf_connect_sheet:"Connect a Google Sheet in Settings to see real market performance.",
+      market_perf_loading:"Fetching real prices for your holdings…",
+      market_perf_no_data:"Couldn't load real market performance for this period.",
+      market_perf_fetch_failed:"Couldn't reach your Google Sheet. Check your connection.",
+      market_perf_no_holdings:"Add a holding first to see market performance.",
       vs_year_ago:"vs a year ago",
       on_this_day:"On this day, last year", on_this_day_2y:"On this day, two years ago",
       view_annual_report:"View annual report", annual_report:"Annual report", stock_info:"Stock info",
@@ -1663,6 +1680,13 @@
       sub_overview:"نظرة عامة", sub_investments:"الاستثمارات", sub_cash:"النقد", sub_liabilities:"الالتزامات",
       total_net_worth:"إجمالي صافي الثروة", hide:"إخفاء", show:"إظهار", update:"تحديث",
       chart_meta:"مبني من تواريخ معاملاتك الفعلية، بأسعار اليوم — مو حركة السوق يوم بيوم",
+      chart_mode_activity:"نشاطي", chart_mode_market:"أداء السوق",
+      chart_meta_market:"مبني من أسعار تاريخية حقيقية لأسهمك الحالية.",
+      market_perf_connect_sheet:"اربط Google Sheet بالإعدادات عشان تشوف أداء السوق الحقيقي.",
+      market_perf_loading:"جاري جلب الأسعار الحقيقية لأسهمك…",
+      market_perf_no_data:"ما قدرنا نحمّل أداء السوق الحقيقي لهذي الفترة.",
+      market_perf_fetch_failed:"ما قدرنا نوصل لـ Google Sheet. تأكد من الاتصال.",
+      market_perf_no_holdings:"أضف سهماً أول عشان تشوف أداء السوق.",
       vs_year_ago:"مقارنة بقبل سنة",
       on_this_day:"بنفس اليوم، قبل سنة", on_this_day_2y:"بنفس اليوم، قبل سنتين",
       view_annual_report:"عرض التقرير السنوي", annual_report:"التقرير السنوي", stock_info:"معلومات السهم",
@@ -3189,12 +3213,9 @@
     return null;
   }
 
-  function renderHomeChart(){
+  function drawHomeChartFromPoints(points){
     var svg = document.getElementById("homeChartSvg");
     var w=320, h=90, pad=4;
-    var cutoffTime = rangeCutoffTime(uiState.homeRange);
-    var points = netWorthTimeline(cutoffTime);
-
     var maxV = Math.max.apply(null, points), minV = Math.min.apply(null, points);
     var range = Math.max(maxV-minV, 1);
     var stepX = (w-pad*2)/(points.length-1);
@@ -3210,8 +3231,126 @@
       '<defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+lineColor+'" stop-opacity="0.32"/><stop offset="100%" stop-color="'+lineColor+'" stop-opacity="0"/></linearGradient></defs>' +
       '<path d="'+areaPath+'" fill="url(#hg)"/>' +
       '<path d="'+linePath+'" fill="none" stroke="'+lineColor+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
-
+  }
+  function renderHomeChart(){
+    var cutoffTime = rangeCutoffTime(uiState.homeRange);
+    var points = netWorthTimeline(cutoffTime);
+    drawHomeChartFromPoints(points);
     renderYearAgoCompare();
+  }
+
+  // ---------- Market performance mode (real historical prices) ----------
+  var chartMode = "activity";
+  var marketRangeDays = 30;
+  var marketPerfCache = {};
+  function setChartMode(mode){
+    chartMode = mode;
+    document.querySelectorAll('#chartModeToggle button').forEach(function(b){ b.classList.toggle("active", b.dataset.mode === mode); });
+    document.getElementById("rangeTabs").style.display = mode === "activity" ? "flex" : "none";
+    document.getElementById("marketRangeTabs").style.display = mode === "market" ? "flex" : "none";
+    document.getElementById("homeChartCaption").textContent = mode === "market" ? t("chart_meta_market") : t("chart_meta");
+    if(mode === "activity"){ renderHomeChart(); }
+    else { renderMarketPerformance(marketRangeDays, false); }
+  }
+  document.querySelectorAll('#chartModeToggle button').forEach(function(b){
+    b.addEventListener("click", function(){ setChartMode(b.dataset.mode); });
+  });
+  document.querySelectorAll('#marketRangeTabs button[data-mrange]').forEach(function(b){
+    b.addEventListener("click", function(){
+      marketRangeDays = b.dataset.mrange === "1M" ? 30 : 90;
+      document.querySelectorAll('#marketRangeTabs button[data-mrange]').forEach(function(x){ x.classList.toggle("active", x===b); });
+      renderMarketPerformance(marketRangeDays, false);
+    });
+  });
+  document.getElementById("marketRefreshBtn").addEventListener("click", function(){
+    renderMarketPerformance(marketRangeDays, true);
+  });
+
+  function renderMarketPerformance(days, forceRefresh){
+    var caption = document.getElementById("homeChartCaption");
+    var tickers = Array.from(new Set(state.holdings.map(function(h){ return h.ticker; })));
+    if(tickers.length === 0){
+      caption.textContent = t("market_perf_no_holdings");
+      return;
+    }
+    if(!state.sheetWebAppUrl){
+      caption.textContent = t("market_perf_connect_sheet");
+      return;
+    }
+    var cacheKey = tickers.slice().sort().join(",") + "_" + days;
+    if(!forceRefresh && marketPerfCache[cacheKey]){
+      drawHomeChartFromPoints(marketPerfCache[cacheKey]);
+      caption.textContent = t("chart_meta_market");
+      return;
+    }
+    caption.textContent = t("market_perf_loading");
+    var url = state.sheetWebAppUrl + (state.sheetWebAppUrl.indexOf("?")>-1?"&":"?") + "historyMulti=" + encodeURIComponent(tickers.join(",")) + "&days=" + days;
+    fetch(url).then(function(r){ return r.json(); }).then(function(seriesByTicker){
+      if(chartMode !== "market" || marketRangeDays !== days) return;
+      var points = buildMarketPerformanceSeries(seriesByTicker, tickers, days);
+      if(!points || points.length < 2){
+        caption.textContent = t("market_perf_no_data");
+        return;
+      }
+      marketPerfCache[cacheKey] = points;
+      drawHomeChartFromPoints(points);
+      caption.textContent = t("chart_meta_market");
+    }).catch(function(){
+      if(chartMode !== "market" || marketRangeDays !== days) return;
+      caption.textContent = t("market_perf_fetch_failed");
+    });
+  }
+  function buildMarketPerformanceSeries(seriesByTicker, tickers, days){
+    // Collect the union of valid trading dates across all fetched series
+    var dateSet = {};
+    tickers.forEach(function(tk){
+      var series = seriesByTicker[tk];
+      if(!Array.isArray(series)) return;
+      series.forEach(function(p){
+        var t2 = new Date(p.date).getTime();
+        if(!isNaN(t2) && t2 > 31536000000 && typeof p.price === "number" && isFinite(p.price) && p.price > 0){
+          dateSet[p.date] = true;
+        }
+      });
+    });
+    var dates = Object.keys(dateSet).sort();
+    if(dates.length < 2) return null;
+    // Build ticker -> sorted [{date,price}] for nearest-lookup with carry-forward
+    var byTicker = {};
+    tickers.forEach(function(tk){
+      var series = (seriesByTicker[tk]||[]).filter(function(p){
+        var t2 = new Date(p.date).getTime();
+        return !isNaN(t2) && t2 > 31536000000 && typeof p.price === "number" && isFinite(p.price) && p.price > 0;
+      }).sort(function(a,b){ return new Date(a.date)-new Date(b.date); });
+      byTicker[tk] = series;
+    });
+    function priceAt(tk, dateStr){
+      var series = byTicker[tk];
+      if(!series || !series.length) return null;
+      var targetTime = new Date(dateStr).getTime();
+      var best = null;
+      for(var i=0;i<series.length;i++){
+        var pt = new Date(series[i].date).getTime();
+        if(pt <= targetTime) best = series[i].price; else break;
+      }
+      return best !== null ? best : series[0].price;
+    }
+    var cashLiabNow = cashTotal() - liabTotal();
+    return dates.map(function(dateStr){
+      var cutoffTime = new Date(dateStr).getTime();
+      var investValue = 0;
+      state.holdings.forEach(function(h){
+        var units = 0;
+        (h.transactions||[]).forEach(function(tx){
+          var txTime = new Date(tx.date+"T"+(tx.time||"00:00")).getTime();
+          if(txTime <= cutoffTime) units += (tx.type==="buy" ? tx.units : -tx.units);
+        });
+        units = Math.max(0, units);
+        var px = priceAt(h.ticker, dateStr);
+        if(px !== null) investValue += convertAmount(units*px, currencyForTicker(h.ticker), state.currency);
+      });
+      return investValue + cashLiabNow;
+    });
   }
 
   function renderYearAgoCompare(){
@@ -3265,7 +3404,7 @@
       document.getElementById("nwChgAmt").className = "chg-amt num" + (dir?(" "+dir):(nw>0?" up":""));
     }
 
-    renderHomeChart();
+    if(chartMode === "activity"){ renderHomeChart(); } else { renderMarketPerformance(marketRangeDays, false); }
 
     var onboardDone = 0;
     if(state.holdings.length>0){ onboardDone++; document.getElementById("onboardHolding").classList.add("done"); }
@@ -4494,8 +4633,7 @@
   var stockHistoryCache = {};
   var selectedDetailRangeDays = 90;
   var DETAIL_RANGES = [
-    { key:"1M", days:30 }, { key:"3M", days:90 }, { key:"6M", days:180 },
-    { key:"1Y", days:365 }, { key:"MAX", days:1825 }
+    { key:"1M", days:30 }, { key:"3M", days:90 }, { key:"6M", days:180 }
   ];
   function drawSimpleFallbackChart(h){
     var svg = document.getElementById("detailChartSvg");
