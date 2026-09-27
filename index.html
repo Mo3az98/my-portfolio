@@ -13,9 +13,30 @@
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='48' fill='%23050505'/%3E%3Cpath d='M46 148 L88 88 L116 112 L156 50' fill='none' stroke='%233d8bff' stroke-width='20' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='156' cy='50' r='11' fill='white'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+  @font-face{
+    font-family:"Thmanyah Sans"; font-weight:300; font-style:normal; font-display:swap;
+    src:url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Light.woff2") format("woff2");
+  }
+  @font-face{
+    font-family:"Thmanyah Sans"; font-weight:400; font-style:normal; font-display:swap;
+    src:url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Regular.woff2") format("woff2");
+  }
+  @font-face{
+    font-family:"Thmanyah Sans"; font-weight:500; font-style:normal; font-display:swap;
+    src:url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Medium.woff2") format("woff2");
+  }
+  @font-face{
+    font-family:"Thmanyah Sans"; font-weight:700; font-style:normal; font-display:swap;
+    src:url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Bold.woff2") format("woff2");
+  }
+  @font-face{
+    font-family:"Thmanyah Sans"; font-weight:900; font-style:normal; font-display:swap;
+    src:url("https://cdn.jsdelivr.net/gh/engdawood/thmanyah-font-web@4266a9d/fonts/thmanyah-sans/woff2/thmanyah-sans-Black.woff2") format("woff2");
+  }
   :root{
+    --font-ui:'Thmanyah Sans','Plus Jakarta Sans','Inter',ui-sans-serif,system-ui,sans-serif;
     --bg:#000000;
     --surface:#141414;
     --surface-2:#1c1c1e;
@@ -44,12 +65,13 @@
     --text-muted:#6b6b70;
     --text-faint:#9a9a9e;
   }
+  html[dir="rtl"]{ --font-ui:'Thmanyah Sans','Tahoma',sans-serif; }
   *,*::before,*::after{box-sizing:inherit; -webkit-tap-highlight-color:transparent; }
   html{scroll-padding-top:env(safe-area-inset-top,0px);}
   html,body{height:100%;}
   body{
     margin:0; background:var(--bg); color:var(--text);
-    font-family:'Inter',ui-sans-serif,system-ui,sans-serif;
+    font-family:var(--font-ui);
     -webkit-font-smoothing:antialiased; min-height:100%;
   }
   .num{ font-variant-numeric:tabular-nums; }
@@ -95,7 +117,7 @@
   .chart-meta{ color:var(--text-faint); font-size:0.72rem; margin:6px 2px 14px; }
 
   .range-tabs{ display:flex; justify-content:space-between; margin-bottom:2px; }
-  .range-tabs button{ flex:1; background:none; border:none; color:var(--text-faint); font-family:'Inter',sans-serif; font-size:0.78rem; font-weight:700; padding:9px 2px; border-radius:999px; cursor:pointer; }
+  .range-tabs button{ flex:1; background:none; border:none; color:var(--text-faint); font-family:var(--font-ui); font-size:0.78rem; font-weight:700; padding:9px 2px; border-radius:999px; cursor:pointer; }
   .range-tabs button.active{ background:var(--surface-3); color:var(--text); }
 
   /* ---- Getting started ---- */
@@ -133,7 +155,7 @@
 
   .nw-subtabs{ display:flex; gap:18px; overflow-x:auto; scrollbar-width:none; min-width:0; -webkit-overflow-scrolling:touch; }
   .nw-subtabs::-webkit-scrollbar{ display:none; }
-  .nwsub-btn{ background:none; border:none; color:var(--text-faint); font-family:'Inter',sans-serif; font-size:1.25rem; font-weight:800; letter-spacing:-0.01em; padding:0; cursor:pointer; white-space:nowrap; flex-shrink:0; }
+  .nwsub-btn{ background:none; border:none; color:var(--text-faint); font-family:var(--font-ui); font-size:1.25rem; font-weight:800; letter-spacing:-0.01em; padding:0; cursor:pointer; white-space:nowrap; flex-shrink:0; }
   .nwsub-btn.active{ color:var(--text); }
 
   .section-heading.plus .plus-btn{ background:none; border:none; color:var(--text); font-size:1.5rem; font-weight:400; cursor:pointer; line-height:1; padding:0 2px; }
@@ -175,7 +197,7 @@
   .plan-stat-row .num{ color:var(--text); font-weight:700; }
 
   .insight-input-row{ display:flex; gap:8px; margin-bottom:14px; }
-  .insight-input-row input{ flex:1; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:'Inter',sans-serif; font-size:0.9rem; padding:12px 14px; border-radius:999px; }
+  .insight-input-row input{ flex:1; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:var(--font-ui); font-size:0.9rem; padding:12px 14px; border-radius:999px; }
   .insight-input-row input::placeholder{ color:var(--text-faint); }
   .insight-input-row input:focus{ outline:2px solid var(--blue); outline-offset:-1px; border-color:var(--blue); }
   .insight-input-row button{ width:44px; height:44px; border-radius:50%; background:var(--text); color:var(--bg); border:none; font-size:1rem; cursor:pointer; flex-shrink:0; }
@@ -188,7 +210,7 @@
   .settings-topbar{ display:flex; align-items:center; justify-content:center; position:relative; padding:4px 0 18px; }
   .stb-back{ position:absolute; left:0; background:none; border:none; color:var(--text); font-size:1.6rem; line-height:1; cursor:pointer; padding:4px 8px; }
 
-  html[dir="rtl"] body{ font-family:'Inter','Tahoma',sans-serif; }
+  html[dir="rtl"] body{ font-family:var(--font-ui); }
   html[dir="rtl"] .stb-back{ left:auto; right:0; transform:scaleX(-1); }
   html[dir="rtl"] .detail-topbar .stb-back{ transform:scaleX(-1); }
   html[dir="rtl"] .fab{ right:auto; left:18px; }
@@ -237,11 +259,11 @@
   .detail-price-row .chg-pct{ font-size:0.86rem; font-weight:700; color:var(--text-muted); }
   .detail-price-row .chg-amt{ font-size:0.95rem; font-weight:700; margin-top:2px; }
   .detail-mini-chart{ margin:10px -4px 4px; position:relative; }
-  .chart-tooltip{ position:absolute; top:0; transform:translateX(-50%); background:var(--surface-3); border:1px solid var(--hairline); border-radius:10px; padding:5px 9px; font-family:'Inter',sans-serif; font-size:0.72rem; font-weight:700; white-space:nowrap; pointer-events:none; display:none; z-index:5; }
+  .chart-tooltip{ position:absolute; top:0; transform:translateX(-50%); background:var(--surface-3); border:1px solid var(--hairline); border-radius:10px; padding:5px 9px; font-family:var(--font-ui); font-size:0.72rem; font-weight:700; white-space:nowrap; pointer-events:none; display:none; z-index:5; }
   .chart-tooltip .ct-date{ color:var(--text-faint); font-weight:600; font-size:0.66rem; }
   .detail-mini-chart svg{ width:100%; height:auto; display:block; }
   .dmc-labels{ display:flex; justify-content:space-between; color:var(--text-faint); font-size:0.72rem; margin-top:6px; font-weight:600; }
-  .dtab-btn{ flex:1; background:none; border:none; color:var(--text-muted); font-family:'Inter',sans-serif; font-size:0.85rem; font-weight:600; padding:9px 4px; border-radius:999px; cursor:pointer; }
+  .dtab-btn{ flex:1; background:none; border:none; color:var(--text-muted); font-family:var(--font-ui); font-size:0.85rem; font-weight:600; padding:9px 4px; border-radius:999px; cursor:pointer; }
   .dtab-btn.active{ background:var(--text); color:var(--bg); }
   .detail-row{ display:flex; align-items:center; justify-content:space-between; padding:13px 4px; border-bottom:1px solid var(--hairline); font-size:0.9rem; color:var(--text-muted); }
   .liab-txn-row{ display:flex; align-items:center; justify-content:space-between; padding:11px 4px; border-bottom:1px solid var(--hairline); font-size:0.85rem; gap:10px; }
@@ -262,7 +284,7 @@
   .rating-row .rcount{ width:26px; text-align:right; flex-shrink:0; font-size:0.8rem; font-weight:700; color:var(--text); }
 
   .search-page-bar{ display:flex; align-items:center; gap:12px; padding-top:env(safe-area-inset-top,0px); margin-bottom:24px; }
-  .search-page-bar input{ flex:1; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:'Inter',sans-serif; font-size:0.92rem; padding:12px 15px; border-radius:14px; }
+  .search-page-bar input{ flex:1; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:var(--font-ui); font-size:0.92rem; padding:12px 15px; border-radius:14px; }
   .search-page-bar input::placeholder{ color:var(--text-faint); }
   .search-page-bar input:focus{ outline:2px solid var(--blue); outline-offset:-1px; border-color:var(--blue); }
   .search-page-bar button{ background:none; border:none; color:var(--text); font-weight:700; font-size:0.9rem; cursor:pointer; flex-shrink:0; padding:4px 0; }
@@ -277,7 +299,7 @@
   .change.flat{ color:var(--text-muted); font-weight:500; }
 
   .tabs{ display:flex; gap:3px; background:var(--surface-2); border-radius:999px; padding:4px; margin-bottom:16px; }
-  .tabs button{ flex:1; background:none; border:none; color:var(--text-muted); font-family:'Inter',sans-serif; font-size:0.83rem; font-weight:600; padding:9px 4px; border-radius:999px; cursor:pointer; }
+  .tabs button{ flex:1; background:none; border:none; color:var(--text-muted); font-family:var(--font-ui); font-size:0.83rem; font-weight:600; padding:9px 4px; border-radius:999px; cursor:pointer; }
   .tabs button.active{ background:var(--text); color:var(--bg); }
 
   section.panel{ display:none; }
@@ -301,7 +323,7 @@
 
   .list-card{ border:1px solid var(--hairline); background:var(--surface); border-radius:16px; padding:4px 16px; }
 
-  button.add-btn{ width:100%; margin-top:14px; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:'Inter',sans-serif; font-size:0.85rem; font-weight:700; padding:13px; border-radius:14px; cursor:pointer; }
+  button.add-btn{ width:100%; margin-top:14px; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:var(--font-ui); font-size:0.85rem; font-weight:700; padding:13px; border-radius:14px; cursor:pointer; }
   button.add-btn:hover{ background:var(--surface-3); }
 
   .empty-state{ text-align:center; padding:38px 12px; color:var(--text-muted); }
@@ -317,6 +339,23 @@
   .bar-col{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; gap:6px; }
   .bar{ width:60%; min-height:2px; border-radius:4px 4px 0 0; background:linear-gradient(180deg, var(--blue), #00d9b0); }
   .bar-col .mlabel{ font-size:0.62rem; color:var(--text-faint); font-weight:600; }
+
+  .perf-heatmap-months{ display:grid; grid-template-columns:32px repeat(12,1fr); gap:3px; margin-bottom:6px; }
+  .perf-heatmap-months span{ font-size:0.6rem; color:var(--text-faint); text-align:center; font-weight:700; }
+  .perf-heatmap-row{ display:grid; grid-template-columns:32px repeat(12,1fr); gap:3px; align-items:center; margin-bottom:3px; }
+  .perf-heatmap-row .phy-label{ font-size:0.68rem; color:var(--text-muted); font-weight:700; }
+  .perf-cell{ aspect-ratio:1; border-radius:5px; min-width:0; }
+  .perf-cell.empty{ background:var(--surface-2); }
+
+  .perf-bar-chart{ display:flex; align-items:stretch; gap:6px; padding:8px 4px 0; }
+  .perf-bar-col{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; }
+  .perf-bar-pos-wrap{ height:60px; width:100%; display:flex; align-items:flex-end; justify-content:center; }
+  .perf-bar-neg-wrap{ height:60px; width:100%; display:flex; align-items:flex-start; justify-content:center; }
+  .perf-bar-baseline{ height:1px; width:100%; background:var(--hairline); }
+  .perf-bar{ width:56%; border-radius:4px 4px 0 0; min-height:2px; }
+  .perf-bar-neg-wrap .perf-bar{ border-radius:0 0 4px 4px; }
+  .perf-bar-ylabel{ font-size:0.62rem; color:var(--text-faint); font-weight:600; margin-top:8px; }
+  .perf-bar-pct{ font-size:0.66rem; font-weight:700; margin-top:2px; }
 
   .div-row{ display:flex; align-items:center; justify-content:space-between; padding:12px 4px; border-bottom:1px solid var(--hairline); }
   .div-row:last-child{ border-bottom:none; }
@@ -340,7 +379,7 @@
   .alloc-row .sub{ display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-faint); }
 
   .search-box{ position:relative; margin-bottom:14px; }
-  .search-box input{ width:100%; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:'Inter',sans-serif; font-size:0.92rem; padding:13px 16px; border-radius:14px; }
+  .search-box input{ width:100%; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:var(--font-ui); font-size:0.92rem; padding:13px 16px; border-radius:14px; }
   .search-box input::placeholder{ color:var(--text-faint); }
   .search-box input:focus{ outline:2px solid var(--blue); outline-offset:-1px; border-color:var(--blue); }
   .search-results{ border:1px solid var(--hairline); background:var(--surface); border-radius:16px; padding:4px 16px; margin-bottom:8px; }
@@ -385,7 +424,7 @@
 
   .nav-dock{ position:fixed; left:18px; right:18px; bottom:14px; display:flex; align-items:center; gap:8px; max-width:520px; margin:0 auto; z-index:30; }
   .bottom-nav{ display:flex; flex:1; background:var(--surface-2); border-radius:999px; padding:5px; gap:1px; box-shadow:0 8px 30px rgba(0,0,0,0.45); }
-  .bottom-nav button{ flex:1; background:none; border:none; color:var(--text-faint); font-family:'Inter',sans-serif; font-size:0.6rem; font-weight:600; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 2px; border-radius:999px; cursor:pointer; }
+  .bottom-nav button{ flex:1; background:none; border:none; color:var(--text-faint); font-family:var(--font-ui); font-size:0.6rem; font-weight:600; display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 2px; border-radius:999px; cursor:pointer; }
   .bottom-nav button .g{ font-size:0.98rem; line-height:1; }
   .bottom-nav button.active{ color:var(--text); background:var(--surface-3); }
   .search-fab{ flex-shrink:0; width:64px; height:64px; border-radius:50%; background:var(--surface-2); border:none; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:0; color:var(--text); cursor:pointer; box-shadow:0 8px 30px rgba(0,0,0,0.45); }
@@ -401,8 +440,8 @@
   .modal h3 button{ background:none; border:none; color:var(--text-muted); font-size:1.4rem; cursor:pointer; line-height:1; }
   .field{ margin-bottom:14px; }
   .field label{ display:block; font-size:0.76rem; color:var(--text-muted); margin-bottom:6px; font-weight:600; }
-  .field input,.field select{ width:100%; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:'Inter',sans-serif; font-size:0.92rem; padding:11px 13px; border-radius:12px; }
-  .field button.select-trigger{ width:100%; display:flex; align-items:center; justify-content:space-between; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:'Inter',sans-serif; font-size:0.92rem; padding:11px 13px; border-radius:12px; cursor:pointer; text-align:left; }
+  .field input,.field select{ width:100%; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:var(--font-ui); font-size:0.92rem; padding:11px 13px; border-radius:12px; }
+  .field button.select-trigger{ width:100%; display:flex; align-items:center; justify-content:space-between; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:var(--font-ui); font-size:0.92rem; padding:11px 13px; border-radius:12px; cursor:pointer; text-align:left; }
   .field button.select-trigger .chev{ color:var(--text-faint); font-size:1rem; flex-shrink:0; margin-left:8px; }
   .picker-row{ display:flex; align-items:center; justify-content:space-between; padding:13px 4px; border-bottom:1px solid var(--hairline); cursor:pointer; font-size:0.92rem; }
   .picker-row:last-child{ border-bottom:none; }
@@ -425,9 +464,9 @@
   .field-row .field{ flex:1; }
   .amount-row{ display:flex; gap:8px; }
   .amount-row input{ flex:1; min-width:0; }
-  .currency-chip{ flex-shrink:0; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:'Inter',sans-serif; font-size:0.85rem; font-weight:700; padding:0 13px; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+  .currency-chip{ flex-shrink:0; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:var(--font-ui); font-size:0.85rem; font-weight:700; padding:0 13px; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
   .modal-actions{ display:flex; gap:10px; margin-top:18px; }
-  .btn{ flex:1; padding:13px; border-radius:14px; font-family:'Inter',sans-serif; font-weight:700; font-size:0.9rem; cursor:pointer; border:1px solid var(--hairline); background:var(--surface-2); color:var(--text); }
+  .btn{ flex:1; padding:13px; border-radius:14px; font-family:var(--font-ui); font-weight:700; font-size:0.9rem; cursor:pointer; border:1px solid var(--hairline); background:var(--surface-2); color:var(--text); }
   .btn.primary{ background:var(--text); border-color:var(--text); color:var(--bg); }
   .btn.danger{ color:var(--red); border-color:rgba(255,69,58,0.35); background:var(--red-dim); }
 
@@ -500,7 +539,7 @@
   <input id="lockScreenInput" type="tel" inputmode="numeric" maxlength="4" pattern="[0-9]*" style="width:140px; text-align:center; font-size:1.6rem; letter-spacing:10px; padding:12px; border-radius:14px; border:1px solid var(--hairline); background:var(--surface-2); color:var(--text);" />
   <div id="lockScreenError" style="color:var(--red); font-size:0.85rem; display:none;" data-i18n="wrong_pin">Wrong PIN, try again.</div>
   <button id="lockScreenUnlockBtn" class="btn primary" style="width:140px; flex:none;" data-i18n="unlock">Unlock</button>
-  <button id="lockScreenBiometricBtn" style="display:none; background:none; border:none; color:var(--blue); font-size:0.85rem; font-family:'Inter',sans-serif; cursor:pointer; padding:6px;" data-i18n="use_biometric">Use Face ID / Fingerprint</button>
+  <button id="lockScreenBiometricBtn" style="display:none; background:none; border:none; color:var(--blue); font-size:0.85rem; font-family:var(--font-ui); cursor:pointer; padding:6px;" data-i18n="use_biometric">Use Face ID / Fingerprint</button>
 </div>
 
 <div class="wrap">
@@ -667,7 +706,7 @@
   <section class="page" id="page-analytics">
     <div class="year-scroll" id="portfolioChips" style="margin-bottom:6px;"></div>
     <div id="portfolioRenameRow" style="display:none; margin:0 0 14px;">
-      <button type="button" id="renamePortfolioBtn" style="background:none; border:none; color:var(--blue); font-size:0.82rem; font-family:'Inter',sans-serif; cursor:pointer; padding:0;" data-i18n="rename_portfolio">✎ Rename portfolio</button>
+      <button type="button" id="renamePortfolioBtn" style="background:none; border:none; color:var(--blue); font-size:0.82rem; font-family:var(--font-ui); cursor:pointer; padding:0;" data-i18n="rename_portfolio">✎ Rename portfolio</button>
     </div>
 
     <div class="tabs" id="analyticsTabs">
@@ -675,6 +714,7 @@
       <button class="atab-btn" data-atab="allocation" data-i18n="tab_allocation">Allocation</button>
       <button class="atab-btn" data-atab="dividends" data-i18n="dividends">Dividends</button>
       <button class="atab-btn" data-atab="realized" data-i18n="tab_realized">Realized</button>
+      <button class="atab-btn" data-atab="performance" data-i18n="tab_performance">Performance</button>
     </div>
 
     <section class="panel active" id="panel-holdings">
@@ -719,6 +759,33 @@
       <p class="wealth-desc" style="margin-top:-6px;" data-i18n="realized_desc">Gains and losses locked in from sell transactions, based on average cost at the time of each sale.</p>
       <div class="list-card" id="realizedList"></div>
       <button class="add-btn" id="openAnnualReportBtn" data-i18n="view_annual_report">View annual report</button>
+    </section>
+
+    <section class="panel" id="panel-performance">
+      <div class="wealth-card" id="perfSummaryCard" style="margin-bottom:16px;">
+        <div class="wealth-card-head"><h2 data-i18n="performance_title">Performance (TTWROR)</h2><button id="perfRefreshBtn" aria-label="Refresh" style="background:none; border:none; color:var(--text-muted); font-size:1.05rem; cursor:pointer; padding:2px 4px;">⟳</button></div>
+        <p class="wealth-desc" data-i18n="performance_desc">Your True Time-Weighted Rate of Return — the most accurate performance KPI, unaffected by when you added or withdrew money. Based on real historical prices for your holdings.</p>
+        <div class="plan-stat-row"><span data-i18n="ttwror_since_inception">Since inception</span><span class="num" id="perfSinceInception">—</span></div>
+        <div class="plan-stat-row"><span data-i18n="invested_capital">Invested capital</span><span class="num" id="perfInvestedCapital">—</span></div>
+        <div class="plan-stat-row"><span data-i18n="perf_gains_losses">Gains &amp; losses</span><span class="num" id="perfGainsLosses">—</span></div>
+        <div class="plan-stat-row"><span data-i18n="perf_costs">Fees &amp; taxes</span><span class="num" id="perfCosts">—</span></div>
+      </div>
+
+      <div class="section-heading"><h2 data-i18n="performance_heatmap">Performance heat map</h2></div>
+      <div class="list-card" id="perfHeatmapCard" style="padding:14px 12px;">
+        <div id="perfHeatmap"></div>
+      </div>
+
+      <div class="section-heading" style="margin-top:22px;"><h2 data-i18n="performance_yearly">Yearly returns</h2></div>
+      <div class="perf-bar-chart" id="perfBarChart"></div>
+
+      <div class="section-heading" style="margin-top:22px;"><h2 data-i18n="performance_growth">Cumulative growth</h2></div>
+      <div class="proj-card" id="perfLineCard" style="margin-bottom:8px;">
+        <svg viewBox="0 0 320 90" id="perfLineSvg"></svg>
+        <div class="proj-labels" id="perfLineLabels"></div>
+      </div>
+
+      <p class="wealth-desc" id="perfStatusMsg" style="display:none; text-align:center; padding:30px 8px;"></p>
     </section>
   </section>
 
@@ -1320,7 +1387,7 @@
         <span class="sr-text">
           <span class="sr-title" data-i18n="google_sheet_title">Google Sheet (Apps Script)</span>
           <span class="sr-sub" data-i18n="google_sheet_sub">Paste a deployed Google Apps Script Web App URL that returns price data (works for both US and Tadawul tickers via GOOGLEFINANCE, and reliably supports direct browser calls). Only works once this file is hosted outside claude.ai (e.g. GitHub Pages) — this preview link blocks outside requests.</span>
-          <input id="sheetWebAppUrlInput" type="text" placeholder="https://script.google.com/macros/s/.../exec" style="margin-top:10px; width:100%; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:'Inter',sans-serif; font-size:0.85rem; padding:9px 11px; border-radius:10px;" />
+          <input id="sheetWebAppUrlInput" type="text" placeholder="https://script.google.com/macros/s/.../exec" style="margin-top:10px; width:100%; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:var(--font-ui); font-size:0.85rem; padding:9px 11px; border-radius:10px;" />
         </span>
       </div>
     </div>
@@ -1488,6 +1555,21 @@
       market_perf_no_data:"Couldn't load real market performance for this period.",
       market_perf_fetch_failed:"Couldn't reach your Google Sheet. Check your connection.",
       market_perf_no_holdings:"Add a holding first to see market performance.",
+      tab_performance:"Performance",
+      performance_title:"Performance (TTWROR)",
+      performance_desc:"Your True Time-Weighted Rate of Return — the most accurate performance KPI, unaffected by when you added or withdrew money. Based on real historical prices for your holdings.",
+      performance_heatmap:"Performance heat map",
+      performance_yearly:"Yearly returns",
+      performance_growth:"Cumulative growth",
+      ttwror_since_inception:"Since inception",
+      invested_capital:"Invested capital",
+      perf_gains_losses:"Gains & losses",
+      perf_costs:"Fees & taxes",
+      performance_no_holdings:"Add a holding first to see your performance.",
+      performance_connect_sheet:"Connect a Google Sheet in Settings to calculate real TTWROR from historical prices.",
+      performance_loading:"Crunching your historical performance…",
+      performance_no_data:"Couldn't load enough price history to calculate performance.",
+      performance_fetch_failed:"Couldn't reach your Google Sheet. Check your connection.",
       vs_year_ago:"vs a year ago",
       on_this_day:"On this day, last year", on_this_day_2y:"On this day, two years ago",
       view_annual_report:"View annual report", annual_report:"Annual report", stock_info:"Stock info",
@@ -1694,6 +1776,21 @@
       market_perf_no_data:"ما قدرنا نحمّل أداء السوق الحقيقي لهذي الفترة.",
       market_perf_fetch_failed:"ما قدرنا نوصل لـ Google Sheet. تأكد من الاتصال.",
       market_perf_no_holdings:"أضف سهماً أول عشان تشوف أداء السوق.",
+      tab_performance:"الأداء",
+      performance_title:"الأداء (TTWROR)",
+      performance_desc:"معدل العائد المرجّح بالوقت TTWROR — أدق مؤشر لقياس أدائك، وما يتأثر بتوقيت إضافتك أو سحبك للفلوس. مبني على أسعار تاريخية حقيقية لأسهمك.",
+      performance_heatmap:"خريطة الأداء الحرارية",
+      performance_yearly:"العائد السنوي",
+      performance_growth:"النمو التراكمي",
+      ttwror_since_inception:"من البداية",
+      invested_capital:"رأس المال المستثمر",
+      perf_gains_losses:"الأرباح والخسائر",
+      perf_costs:"الرسوم والضرائب",
+      performance_no_holdings:"أضف سهماً أول عشان تشوف أداءك.",
+      performance_connect_sheet:"اربط Google Sheet بالإعدادات عشان نحسب TTWROR حقيقي من الأسعار التاريخية.",
+      performance_loading:"جاري حساب أدائك التاريخي…",
+      performance_no_data:"ما قدرنا نحمّل بيانات أسعار كافية لحساب الأداء.",
+      performance_fetch_failed:"ما قدرنا نوصل لـ Google Sheet. تأكد من الاتصال.",
       vs_year_ago:"مقارنة بقبل سنة",
       on_this_day:"بنفس اليوم، قبل سنة", on_this_day_2y:"بنفس اليوم، قبل سنتين",
       view_annual_report:"عرض التقرير السنوي", annual_report:"التقرير السنوي", stock_info:"معلومات السهم",
@@ -3127,6 +3224,7 @@
       document.getElementById("panel-"+btn.dataset.atab).classList.add("active");
       if(btn.dataset.atab === "dividends") renderDividendsTab();
       if(btn.dataset.atab === "realized") renderRealized();
+      if(btn.dataset.atab === "performance") renderPerformanceTab();
     });
   });
 
@@ -3359,6 +3457,277 @@
       return investValue + cashLiabNow;
     });
   }
+
+  // ---------- Performance tab (real TTWROR) ----------
+  var perfDataCache = {};
+  var perfLoadToken = 0;
+
+  function perfHoldingsForPortfolio(){
+    return selectedPortfolioId === "all" ? state.holdings : state.holdings.filter(function(h){ return h.portfolioId === selectedPortfolioId; });
+  }
+
+  function computePerformanceData(seriesByTicker, tickers, holdings){
+    var dateSet = {};
+    tickers.forEach(function(tk){
+      var series = seriesByTicker[tk];
+      if(!Array.isArray(series)) return;
+      series.forEach(function(p){
+        var tmm = new Date(p.date).getTime();
+        if(!isNaN(tmm) && tmm > 31536000000 && typeof p.price === "number" && isFinite(p.price) && p.price > 0){ dateSet[p.date] = true; }
+      });
+    });
+    var dates = Object.keys(dateSet).sort();
+    if(dates.length < 2) return null;
+
+    var byTicker = {};
+    tickers.forEach(function(tk){
+      var series = (seriesByTicker[tk]||[]).filter(function(p){
+        var tmm = new Date(p.date).getTime();
+        return !isNaN(tmm) && tmm > 31536000000 && typeof p.price === "number" && isFinite(p.price) && p.price > 0;
+      }).sort(function(a,b){ return new Date(a.date)-new Date(b.date); });
+      byTicker[tk] = series;
+    });
+    function priceAt(tk, dateStr){
+      var series = byTicker[tk];
+      if(!series || !series.length) return null;
+      var targetTime = new Date(dateStr).getTime();
+      var best = null;
+      for(var i=0;i<series.length;i++){
+        var pt = new Date(series[i].date).getTime();
+        if(pt <= targetTime) best = series[i].price; else break;
+      }
+      return best !== null ? best : series[0].price;
+    }
+
+    // External cash flows into/out of this set of holdings, from each transaction's own recorded price.
+    var flows = [];
+    var investedCapital = 0, totalCosts = 0;
+    holdings.forEach(function(h){
+      var curr = currencyForTicker(h.ticker);
+      (h.transactions||[]).forEach(function(tx){
+        var principal = convertAmount(tx.units * tx.pricePerUnit, curr, state.currency);
+        var cost = convertAmount((Number(tx.fees)||0) + (Number(tx.taxes)||0), curr, state.currency);
+        var flowAmt = tx.type==="buy" ? (principal + cost) : -(principal - cost);
+        var txTime = new Date(tx.date+"T"+(tx.time||"00:00")).getTime();
+        flows.push({ time: txTime, amount: flowAmt });
+        investedCapital += tx.type==="buy" ? principal : -principal;
+        totalCosts += cost;
+      });
+    });
+    function flowBetween(startExclusiveTime, endInclusiveTime){
+      var sum = 0;
+      flows.forEach(function(f){ if(f.time > startExclusiveTime && f.time <= endInclusiveTime) sum += f.amount; });
+      return sum;
+    }
+
+    function valueAt(dateStr){
+      var cutoff = new Date(dateStr).getTime();
+      var total = 0;
+      holdings.forEach(function(h){
+        var units = 0;
+        (h.transactions||[]).forEach(function(tx){
+          var txTime = new Date(tx.date+"T"+(tx.time||"00:00")).getTime();
+          if(txTime <= cutoff) units += (tx.type==="buy" ? tx.units : -tx.units);
+        });
+        units = Math.max(0, units);
+        var px = priceAt(h.ticker, dateStr);
+        if(px !== null) total += convertAmount(units*px, currencyForTicker(h.ticker), state.currency);
+      });
+      return total;
+    }
+
+    var daily = dates.map(function(d){ return { date:d, value:valueAt(d) }; });
+
+    var index = 100, indexSeries = [], dailyReturns = [];
+    var prevValue = null, prevTime = null;
+    daily.forEach(function(pt, i){
+      var curTime = new Date(pt.date).getTime();
+      if(i===0){
+        prevValue = pt.value; prevTime = curTime;
+        indexSeries.push({ date: pt.date, index: index });
+        return;
+      }
+      var flow = flowBetween(prevTime, curTime);
+      var r = 0;
+      if(prevValue > 0.01){ r = (pt.value - flow - prevValue) / prevValue; }
+      else if(flow > 0){ r = 0; }
+      if(!isFinite(r)) r = 0;
+      r = Math.max(-0.9, Math.min(3, r));
+      index = index * (1+r);
+      indexSeries.push({ date: pt.date, index: index });
+      dailyReturns.push({ date: pt.date, r: r });
+      prevValue = pt.value; prevTime = curTime;
+    });
+
+    var monthly = {}, yearly = {};
+    dailyReturns.forEach(function(dr){
+      var dt = new Date(dr.date);
+      var ym = dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0");
+      var y = String(dt.getFullYear());
+      monthly[ym] = (monthly[ym]===undefined?1:monthly[ym]) * (1+dr.r);
+      yearly[y] = (yearly[y]===undefined?1:yearly[y]) * (1+dr.r);
+    });
+    var monthlyPct = {}; Object.keys(monthly).forEach(function(k){ monthlyPct[k] = (monthly[k]-1)*100; });
+    var yearlyPct = {}; Object.keys(yearly).forEach(function(k){ yearlyPct[k] = (yearly[k]-1)*100; });
+
+    var currentValue = daily[daily.length-1].value;
+    return {
+      indexSeries: indexSeries,
+      monthlyPct: monthlyPct,
+      yearlyPct: yearlyPct,
+      sinceInceptionPct: (index/100 - 1) * 100,
+      investedCapital: investedCapital,
+      gainsLosses: currentValue - investedCapital,
+      totalCosts: totalCosts
+    };
+  }
+
+  function renderPerfHeatmap(monthlyPct){
+    var el = document.getElementById("perfHeatmap");
+    var keys = Object.keys(monthlyPct);
+    if(keys.length===0){ el.innerHTML = '<p class="wealth-desc" style="margin:0;">'+t("performance_no_data")+'</p>'; return; }
+    var years = Array.from(new Set(keys.map(function(k){ return k.split("-")[0]; }))).sort();
+    var monthAbbr = uiState.language==="ar"
+      ? ["ينا","فبر","مار","أبر","ماي","يون","يول","أغس","سبت","أكت","نوف","ديس"]
+      : ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    var maxAbs = Math.max.apply(null, keys.map(function(k){ return Math.abs(monthlyPct[k]); }).concat([1]));
+    var html = '<div class="perf-heatmap-months"><span></span>' + monthAbbr.map(function(m){ return '<span>'+m+'</span>'; }).join("") + '</div>';
+    years.forEach(function(y){
+      html += '<div class="perf-heatmap-row"><span class="phy-label">'+y+'</span>';
+      for(var m=1;m<=12;m++){
+        var k = y+"-"+String(m).padStart(2,"0");
+        if(monthlyPct[k] === undefined){
+          html += '<div class="perf-cell empty"></div>';
+        } else {
+          var v = monthlyPct[k];
+          var alpha = Math.min(1, 0.18 + 0.82*(Math.abs(v)/maxAbs));
+          var color = v >= 0 ? "0,217,100" : "255,69,58";
+          html += '<div class="perf-cell" style="background:rgba('+color+','+alpha.toFixed(2)+');" title="'+k+": "+fmtPct(v)+'"></div>';
+        }
+      }
+      html += '</div>';
+    });
+    el.innerHTML = html;
+  }
+
+  function renderPerfBarChart(yearlyPct){
+    var chart = document.getElementById("perfBarChart");
+    chart.innerHTML = "";
+    var years = Object.keys(yearlyPct).sort();
+    if(years.length===0) return;
+    var maxAbs = Math.max.apply(null, years.map(function(y){ return Math.abs(yearlyPct[y]); }).concat([1]));
+    var HALF = 60;
+    years.forEach(function(y){
+      var v = yearlyPct[y];
+      var h = Math.max(2, (Math.abs(v)/maxAbs) * HALF);
+      var col = document.createElement("div"); col.className = "perf-bar-col";
+      col.innerHTML =
+        '<div class="perf-bar-pos-wrap"><div class="perf-bar" style="height:'+(v>=0?h:0)+'px; background:var(--green);"></div></div>' +
+        '<div class="perf-bar-baseline"></div>' +
+        '<div class="perf-bar-neg-wrap"><div class="perf-bar" style="height:'+(v<0?h:0)+'px; background:var(--red);"></div></div>' +
+        '<div class="perf-bar-ylabel">'+y+'</div>' +
+        '<div class="perf-bar-pct num" style="color:'+(v>=0?"var(--green)":"var(--red)")+'">'+fmtPct(v)+'</div>';
+      chart.appendChild(col);
+    });
+  }
+
+  function renderPerfLineChart(indexSeries){
+    var svg = document.getElementById("perfLineSvg");
+    if(!indexSeries || indexSeries.length < 2){ svg.innerHTML=""; document.getElementById("perfLineLabels").innerHTML=""; return; }
+    var w=320,h=90,pad=4;
+    var values = indexSeries.map(function(p){ return p.index; });
+    var maxV = Math.max.apply(null, values), minV = Math.min.apply(null, values);
+    var range = Math.max(maxV-minV, 0.01);
+    var stepX = (w-pad*2)/(values.length-1);
+    var coords = values.map(function(v,i){
+      var x = pad + i*stepX;
+      var y = h - pad - ((v-minV)/range)*(h-pad*2);
+      return [x,y];
+    });
+    var lineColor = values[values.length-1] >= values[0] ? "#00d964" : "#ff453a";
+    var linePath = "M"+coords.map(function(c){return c[0].toFixed(1)+","+c[1].toFixed(1);}).join(" L");
+    var areaPath = linePath + " L"+coords[coords.length-1][0].toFixed(1)+","+(h-pad)+" L"+coords[0][0].toFixed(1)+","+(h-pad)+" Z";
+    svg.innerHTML =
+      '<defs><linearGradient id="pfg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+lineColor+'" stop-opacity="0.32"/><stop offset="100%" stop-color="'+lineColor+'" stop-opacity="0"/></linearGradient></defs>' +
+      '<path d="'+areaPath+'" fill="url(#pfg)"/>' +
+      '<path d="'+linePath+'" fill="none" stroke="'+lineColor+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+    var firstDate = new Date(indexSeries[0].date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
+    var lastDate = new Date(indexSeries[indexSeries.length-1].date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
+    document.getElementById("perfLineLabels").innerHTML = '<span>'+firstDate+'</span><span>'+lastDate+'</span>';
+  }
+
+  function renderPerfContent(data){
+    var sinceEl = document.getElementById("perfSinceInception");
+    sinceEl.textContent = fmtPct(data.sinceInceptionPct);
+    sinceEl.style.color = data.sinceInceptionPct>=0 ? "var(--green)" : "var(--red)";
+    document.getElementById("perfInvestedCapital").textContent = fmt(data.investedCapital);
+    var glEl = document.getElementById("perfGainsLosses");
+    glEl.textContent = (data.gainsLosses>=0?"+":"") + fmt(data.gainsLosses);
+    glEl.style.color = data.gainsLosses>=0 ? "var(--green)" : "var(--red)";
+    document.getElementById("perfCosts").textContent = fmt(data.totalCosts);
+    renderPerfHeatmap(data.monthlyPct);
+    renderPerfBarChart(data.yearlyPct);
+    renderPerfLineChart(data.indexSeries);
+  }
+
+  function renderPerformanceTab(forceRefresh){
+    var statusEl = document.getElementById("perfStatusMsg");
+    var summaryCard = document.getElementById("perfSummaryCard");
+    var heatCard = document.getElementById("perfHeatmapCard");
+    var heatHeading = heatCard.previousElementSibling;
+    var barChart = document.getElementById("perfBarChart");
+    var barHeading = barChart.previousElementSibling;
+    var lineCard = document.getElementById("perfLineCard");
+    var lineHeading = lineCard.previousElementSibling;
+    var parts = [summaryCard, heatHeading, heatCard, barHeading, barChart, lineHeading, lineCard];
+
+    function showOnly(msg){
+      statusEl.textContent = msg;
+      statusEl.style.display = "block";
+      parts.forEach(function(el){ el.style.display = "none"; });
+    }
+    function showContent(){
+      statusEl.style.display = "none";
+      parts.forEach(function(el){ el.style.display = ""; });
+    }
+
+    var holdings = perfHoldingsForPortfolio();
+    if(holdings.length === 0){ showOnly(t("performance_no_holdings")); return; }
+    if(!state.sheetWebAppUrl){ showOnly(t("performance_connect_sheet")); return; }
+
+    var tickers = Array.from(new Set(holdings.map(function(h){ return h.ticker; })));
+    var earliestTime = Date.now();
+    holdings.forEach(function(h){
+      (h.transactions||[]).forEach(function(tx){
+        var tm = new Date(tx.date+"T"+(tx.time||"00:00")).getTime();
+        if(tm < earliestTime) earliestTime = tm;
+      });
+    });
+    var days = Math.max(30, Math.ceil((Date.now() - earliestTime) / 86400000) + 5);
+    days = Math.min(days, 3650);
+
+    var cacheKey = tickers.slice().sort().join(",") + "_" + days + "_" + selectedPortfolioId;
+    if(!forceRefresh && perfDataCache[cacheKey]){
+      renderPerfContent(perfDataCache[cacheKey]);
+      showContent();
+      return;
+    }
+    showOnly(t("performance_loading"));
+    var myToken = ++perfLoadToken;
+    var url = state.sheetWebAppUrl + (state.sheetWebAppUrl.indexOf("?")>-1?"&":"?") + "historyMulti=" + encodeURIComponent(tickers.join(",")) + "&days=" + days;
+    fetch(url).then(function(r){ return r.json(); }).then(function(seriesByTicker){
+      if(myToken !== perfLoadToken) return;
+      var data = computePerformanceData(seriesByTicker, tickers, holdings);
+      if(!data){ showOnly(t("performance_no_data")); return; }
+      perfDataCache[cacheKey] = data;
+      renderPerfContent(data);
+      showContent();
+    }).catch(function(){
+      if(myToken !== perfLoadToken) return;
+      showOnly(t("performance_fetch_failed"));
+    });
+  }
+  document.getElementById("perfRefreshBtn").addEventListener("click", function(){ renderPerformanceTab(true); });
 
   function renderYearAgoCompare(){
     var el = document.getElementById("yearAgoCompare");
@@ -3666,6 +4035,8 @@
     renderAllocation();
     renderDividendsTab();
     renderRealized();
+    var perfBtn = document.querySelector('.atab-btn[data-atab="performance"]');
+    if(perfBtn && perfBtn.classList.contains("active")) renderPerformanceTab();
   }
   function renderPortfolioChips(){
     var wrap = document.getElementById("portfolioChips");
