@@ -724,6 +724,8 @@
       <div class="section-heading"><h2 data-i18n="positions">Positions</h2><span class="totals" id="holdingsCount"></span></div>
       <div class="list-card" id="holdingsList"></div>
       <button class="add-btn" id="addHoldingBtn" data-i18n="add_holding_manually">+ Add holding manually</button>
+      <button class="add-btn" id="importHoldingsBtn" data-i18n="import_trades">Import trades from Excel/CSV</button>
+      <input type="file" id="holdingsImportFile" accept=".xlsx,.xls,.csv" style="display:none;" />
     </section>
 
     <section class="panel" id="panel-allocation">
@@ -1461,6 +1463,7 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
   "use strict";
@@ -1607,6 +1610,11 @@
       tab_holdings:"Holdings", tab_allocation:"Allocation",
       search_stocks_quick:"Search for stocks to add quickly",
       positions:"Positions", add_holding_manually:"+ Add holding manually",
+      import_trades:"Import trades from Excel/CSV",
+      import_trades_no_rows:"Couldn't find any valid trade rows in that file.",
+      import_trades_bad_format:"Couldn't recognize the columns in that file. Expected columns like Date, Time, Type, Name, Symbol, Price, Quantity.",
+      import_trades_failed:"Couldn't read that file. Make sure it's a valid Excel (.xlsx) or CSV file.",
+      import_trades_done_tpl:"Imported {txns} transaction(s) across {created} new and {updated} existing holding(s). Skipped {skipped} row(s).",
       by_sector:"By sector", log_dividend:"+ Log a dividend",
       portfolio_health:"Portfolio health",
       health_no_data:"Add holdings and cash to see your health score.",
@@ -1828,6 +1836,11 @@
       tab_holdings:"الأسهم", tab_allocation:"التوزيع",
       search_stocks_quick:"ابحث عن سهم لإضافته بسرعة",
       positions:"المراكز", add_holding_manually:"+ إضافة سهم يدوياً",
+      import_trades:"استيراد الصفقات من إكسل/CSV",
+      import_trades_no_rows:"ما لقينا أي صفوف صفقات صحيحة في هذا الملف.",
+      import_trades_bad_format:"ما قدرنا نتعرّف على أعمدة الملف. المتوقع أعمدة زي التاريخ، الوقت، العملية، اسم السهم، الرمز، السعر، الكمية.",
+      import_trades_failed:"ما قدرنا نقرأ هذا الملف. تأكد إنه ملف إكسل (.xlsx) أو CSV صحيح.",
+      import_trades_done_tpl:"تم استيراد {txns} صفقة عبر {created} سهم جديد و{updated} سهم موجود. تم تجاهل {skipped} صف.",
       by_sector:"حسب القطاع", log_dividend:"+ تسجيل ربح موزّع",
       portfolio_health:"صحة المحفظة",
       health_no_data:"أضف أسهماً ونقداً عشان تشوف درجة صحة محفظتك.",
@@ -4828,6 +4841,14 @@
       document.getElementById("deleteHoldingBtn").style.display = "block";
     }
     if(!h.transactions) h.transactions = [];
+    applyHoldingTransaction(h, type, date, time, units, price, fees, taxes, description);
+    save();
+    return h;
+  }
+
+  function applyHoldingTransaction(h, type, date, time, units, price, fees, taxes, description){
+    fees = fees||0; taxes = taxes||0; description = description||"";
+    if(!h.transactions) h.transactions = [];
     var newTxnId = uid();
     if(type === "sell"){
       var statsBeforeSale = computeHoldingStats(h);
@@ -4842,9 +4863,130 @@
     }
     h.transactions.push({ id:newTxnId, type:type, units:units, pricePerUnit:price, fees:fees, taxes:taxes, description:description, date:date, time:time });
     recalcHoldingStats(h);
-    save();
     return h;
   }
+
+  // ---------- Import trades from Excel/CSV ----------
+  var IMPORT_HEADER_MAP = {
+    date: ["التاريخ","date"],
+    time: ["الوقت","time"],
+    type: ["العملية","type","operation"],
+    name: ["اسم السهم","name","stock name","security"],
+    code: ["الرمز","code","symbol","ticker"],
+    price: ["السعر","price"],
+    qty: ["الكمية","quantity","units","qty"]
+  };
+  function detectImportColumns(headerRow){
+    var map = {};
+    (headerRow||[]).forEach(function(cell, idx){
+      var v = String(cell||"").trim().toLowerCase();
+      Object.keys(IMPORT_HEADER_MAP).forEach(function(key){
+        if(map[key]!==undefined) return;
+        if(IMPORT_HEADER_MAP[key].some(function(alias){ return v === alias.toLowerCase(); })) map[key] = idx;
+      });
+    });
+    return map;
+  }
+  function parseImportDate(raw){
+    if(raw instanceof Date && !isNaN(raw.getTime())) return raw.toISOString().slice(0,10);
+    var s = String(raw||"").trim();
+    var m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if(m) return m[3]+"-"+m[1].padStart(2,"0")+"-"+m[2].padStart(2,"0");
+    var m2 = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+    if(m2) return m2[1]+"-"+m2[2].padStart(2,"0")+"-"+m2[3].padStart(2,"0");
+    var d = new Date(s);
+    if(!isNaN(d.getTime())) return d.toISOString().slice(0,10);
+    return null;
+  }
+  function parseImportType(raw){
+    var s = String(raw||"").trim().toLowerCase();
+    if(s.indexOf("شراء")>=0 || s.indexOf("buy")>=0) return "buy";
+    if(s.indexOf("بيع")>=0 || s.indexOf("sell")>=0) return "sell";
+    return null;
+  }
+  function normalizeImportTicker(rawCode){
+    var code = String(rawCode||"").trim();
+    if(!code) return null;
+    if(/^\d+$/.test(code)) return code + ".SR";
+    var upper = code.toUpperCase();
+    return upper || null;
+  }
+  function importTradesFromRows(rows){
+    if(!rows || rows.length < 2){ showNotice(t("import_trades_no_rows")); return; }
+    var cols = detectImportColumns(rows[0]);
+    if(cols.code===undefined || cols.price===undefined || cols.qty===undefined || cols.type===undefined || cols.date===undefined){
+      showNotice(t("import_trades_bad_format"));
+      return;
+    }
+    var parsed = [], skipped = 0;
+    for(var i=1;i<rows.length;i++){
+      var row = rows[i];
+      if(!row || row.every(function(c){ return c==="" || c===undefined || c===null; })) continue;
+      var dateVal = parseImportDate(row[cols.date]);
+      var typeVal = parseImportType(row[cols.type]);
+      var qtyVal = parseFloat(row[cols.qty]);
+      var priceVal = parseFloat(row[cols.price]);
+      var codeVal = row[cols.code];
+      var nameVal = cols.name!==undefined ? row[cols.name] : "";
+      var timeVal = cols.time!==undefined ? String(row[cols.time]||"") : "";
+      var ticker = normalizeImportTicker(codeVal);
+      if(!dateVal || !typeVal || !ticker || isNaN(qtyVal) || qtyVal<=0 || isNaN(priceVal) || priceVal<0){ skipped++; continue; }
+      parsed.push({ ticker:ticker, name:String(nameVal||"").trim(), type:typeVal, date:dateVal, time:timeVal, units:qtyVal, price:priceVal });
+    }
+    if(parsed.length===0){ showNotice(t("import_trades_no_rows")); return; }
+
+    var byTicker = {};
+    parsed.forEach(function(p){ (byTicker[p.ticker] = byTicker[p.ticker]||[]).push(p); });
+
+    var defaultPortfolioId = selectedPortfolioId !== "all" ? selectedPortfolioId : state.portfolios[0].id;
+    var createdCount = 0, updatedCount = 0, txnCount = 0;
+
+    Object.keys(byTicker).forEach(function(ticker){
+      var group = byTicker[ticker].slice().sort(function(a,b){
+        return new Date(a.date+"T"+(a.time||"00:00")) - new Date(b.date+"T"+(b.time||"00:00"));
+      });
+      var h = state.holdings.find(function(x){ return x.ticker === ticker; });
+      var dbEntry = STOCK_DB.find(function(s){ return s.t === ticker; });
+      var displayName = dbEntry ? (uiState.language==="ar" && dbEntry.nAr ? dbEntry.nAr : dbEntry.n) : (group[0].name || ticker);
+      if(!h){
+        h = { id: uid(), ticker: ticker, name: displayName, sector: dbEntry ? dbEntry.s : "Information Technology", portfolioId: defaultPortfolioId, note: "", currentPrice: group[group.length-1].price, transactions: [] };
+        state.holdings.push(h);
+        createdCount++;
+      } else {
+        updatedCount++;
+      }
+      group.forEach(function(p){
+        applyHoldingTransaction(h, p.type, p.date, p.time, p.units, p.price, 0, 0, "");
+        txnCount++;
+      });
+      h.currentPrice = group[group.length-1].price;
+    });
+
+    save();
+    renderAll();
+    showNotice(tf("import_trades_done_tpl", { txns: txnCount, created: createdCount, updated: updatedCount, skipped: skipped }));
+  }
+  document.getElementById("importHoldingsBtn").addEventListener("click", function(){
+    document.getElementById("holdingsImportFile").click();
+  });
+  document.getElementById("holdingsImportFile").addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if(!file){ return; }
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      try{
+        var data = new Uint8Array(ev.target.result);
+        var wb = XLSX.read(data, { type:"array", cellDates:true });
+        var ws = wb.Sheets[wb.SheetNames[0]];
+        var rows = XLSX.utils.sheet_to_json(ws, { header:1, raw:true, defval:"" });
+        importTradesFromRows(rows);
+      }catch(err){
+        showNotice(t("import_trades_failed"));
+      }
+      e.target.value = "";
+    };
+    reader.readAsArrayBuffer(file);
+  });
 
   document.getElementById("saveHoldingBtn").addEventListener("click", function(){
     var h = commitHoldingTransaction();
