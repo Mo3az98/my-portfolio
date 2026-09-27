@@ -68,11 +68,11 @@
   html[dir="rtl"]{ --font-ui:'Thmanyah Sans','Tahoma',sans-serif; }
   *,*::before,*::after{box-sizing:inherit; -webkit-tap-highlight-color:transparent; }
   html{scroll-padding-top:env(safe-area-inset-top,0px);}
-  html,body{height:100%;}
+  html,body{height:100%; max-width:100%; overflow-x:hidden;}
   body{
     margin:0; background:var(--bg); color:var(--text);
     font-family:var(--font-ui);
-    -webkit-font-smoothing:antialiased; min-height:100%;
+    -webkit-font-smoothing:antialiased; min-height:100%; width:100%;
   }
   .num{ font-variant-numeric:tabular-nums; }
   .redact-bar{ display:inline-block; background:var(--surface-3); border-radius:8px; vertical-align:middle; }
@@ -599,7 +599,7 @@
       </div>
     </div>
 
-    <div class="home-chart-wrap"><svg viewBox="0 0 320 90" id="homeChartSvg"></svg></div>
+    <div class="home-chart-wrap" style="position:relative;"><svg viewBox="0 0 320 90" id="homeChartSvg"></svg><div class="chart-tooltip" id="homeChartTooltip"><div id="homeChartTooltipPrice"></div><div class="ct-date" id="homeChartTooltipDate"></div></div></div>
     <div class="chart-meta" id="homeChartCaption" data-i18n="chart_meta">Net worth history, from what you've logged</div>
     <div class="chart-meta num" id="yearAgoCompare" style="margin-top:2px;"></div>
 
@@ -782,8 +782,8 @@
       <div class="perf-bar-chart" id="perfBarChart"></div>
 
       <div class="section-heading" style="margin-top:22px;"><h2 data-i18n="performance_growth">Cumulative growth</h2></div>
-      <div class="proj-card" id="perfLineCard" style="margin-bottom:8px;">
-        <svg viewBox="0 0 320 90" id="perfLineSvg"></svg>
+      <div class="proj-card" id="perfLineCard" style="margin-bottom:8px; position:relative;">
+        <svg viewBox="0 0 320 90" id="perfLineSvg"></svg><div class="chart-tooltip" id="perfLineChartTooltip"><div id="perfLineChartTooltipPrice"></div><div class="ct-date" id="perfLineChartTooltipDate"></div></div>
         <div class="proj-labels" id="perfLineLabels"></div>
       </div>
 
@@ -1001,7 +1001,7 @@
 
     <div class="field-row" style="margin-top:14px;">
       <div class="field"><label for="hTxnType" data-i18n="transaction_type">Transaction type</label>
-        <select id="hTxnType" style="display:none;"><option value="buy" data-i18n="txn_buy">Buy</option><option value="sell" data-i18n="txn_sell">Sell</option></select>
+        <select id="hTxnType" style="display:none;"><option value="buy" data-i18n="txn_buy">Buy</option><option value="sell" data-i18n="txn_sell">Sell</option><option value="bonus" data-i18n="txn_bonus">Bonus shares</option></select>
         <button type="button" class="select-trigger" id="hTxnTypeTrigger"><span class="tlabel"></span><span class="chev">▾</span></button>
       </div>
       <div class="field"><label for="hTxnDate" data-i18n="transaction_date">Transaction date</label><input id="hTxnDate" type="date" /></div>
@@ -1009,10 +1009,11 @@
 
     <div class="field-row">
       <div class="field"><label for="hUnits" data-i18n="units">Units</label><input id="hUnits" type="number" step="any" inputmode="decimal" data-i18n-ph="units_ph" placeholder="e.g. 10" /></div>
-      <div class="field"><label for="hPricePerUnit" data-i18n="price_per_unit">Price per unit</label>
+      <div class="field" id="hPriceFieldWrap"><label for="hPricePerUnit" data-i18n="price_per_unit">Price per unit</label>
         <div class="amount-row"><input id="hPricePerUnit" type="number" step="any" inputmode="decimal" placeholder="190.00" /><button type="button" class="currency-chip" id="hCurrencyTrigger" style="cursor:default;" tabindex="-1">USD</button></div>
       </div>
     </div>
+    <p class="wealth-desc" id="hBonusNote" style="display:none; margin:-4px 0 12px;" data-i18n="bonus_price_note">Bonus shares are added at no cost — this lowers your average cost per share automatically.</p>
 
     <button type="button" class="advanced-toggle" id="hAdvancedToggle"><span data-i18n="advanced_input">Advanced transaction input</span> <span class="opt" data-i18n="optional">optional</span><span class="chev" id="hAdvancedChev">⌄</span></button>
     <div id="hAdvancedFields" style="display:none;">
@@ -1705,7 +1706,8 @@
       sector_re:"Real Estate", sector_comm:"Communication Services", sector_other:"Other",
       cat_loan:"Loan", cat_cc:"Credit Card", cat_mortgage:"Mortgage", cat_auto:"Auto Loan",
       cat_student:"Student Loan", cat_personal:"Personal Debt", cat_other:"Other Debt",
-      txn_buy:"Buy", txn_sell:"Sell",
+      txn_buy:"Buy", txn_sell:"Sell", txn_bonus:"Bonus shares",
+      bonus_price_note:"Bonus shares are added at no cost — this lowers your average cost per share automatically.",
       txn_borrowed:"Borrowed amount", txn_repayment:"Repayment", txn_interest:"Interest",
       status_paid:"Paid", status_announced:"Announced",
       empty_no_holdings_title:"No holdings yet.", empty_no_holdings_sub:"Search above or add one manually.",
@@ -1931,7 +1933,8 @@
       sector_re:"العقارات", sector_comm:"خدمات الاتصالات", sector_other:"أخرى",
       cat_loan:"قرض", cat_cc:"بطاقة ائتمان", cat_mortgage:"رهن عقاري", cat_auto:"قرض سيارة",
       cat_student:"قرض طلابي", cat_personal:"دين شخصي", cat_other:"دين آخر",
-      txn_buy:"شراء", txn_sell:"بيع",
+      txn_buy:"شراء", txn_sell:"بيع", txn_bonus:"أسهم منحة",
+      bonus_price_note:"أسهم المنحة تُضاف بدون تكلفة — وهذا يخفّض متوسط تكلفة السهم تلقائيًا.",
       txn_borrowed:"مبلغ مقترض", txn_repayment:"سداد", txn_interest:"فائدة",
       status_paid:"مدفوع", status_announced:"معلن",
       empty_no_holdings_title:"لا توجد أسهم بعد.", empty_no_holdings_sub:"ابحث بالأعلى أو أضف سهماً يدوياً.",
@@ -2828,7 +2831,7 @@
       var units = 0;
       (h.transactions||[]).forEach(function(tx){
         var txTime = new Date(tx.date+"T"+(tx.time||"00:00")).getTime();
-        if(txTime <= cutoffTime) units += (tx.type==="buy" ? tx.units : -tx.units);
+        if(txTime <= cutoffTime) units += (tx.type==="sell" ? -tx.units : tx.units);
       });
       if(!h.transactions || h.transactions.length===0){
         if(cutoffTime >= Date.now()) units = h.shares;
@@ -2905,18 +2908,19 @@
     var allTimes = allTimelineEventTimes();
     var now = Date.now();
     if(allTimes.length === 0){
-      return [netWorth(), netWorth()];
+      var v0 = netWorth();
+      return [{date:now-86400000, value:v0}, {date:now, value:v0}];
     }
     var relevant = allTimes.filter(function(tm){ return cutoffTime===null || tm > cutoffTime; })
       .filter(function(tm){ return tm <= now; })
       .sort(function(a,b){ return a-b; });
     var uniqueTimes = relevant.filter(function(tm,i){ return relevant.indexOf(tm)===i; });
     var startTime = cutoffTime===null ? Math.min.apply(null, allTimes) - 1 : cutoffTime;
-    var points = [netWorthAt(startTime)];
-    uniqueTimes.forEach(function(tm){ points.push(netWorthAt(tm)); });
+    var points = [{date:startTime, value:netWorthAt(startTime)}];
+    uniqueTimes.forEach(function(tm){ points.push({date:tm, value:netWorthAt(tm)}); });
     var currentVal = netWorth();
-    if(points[points.length-1] !== currentVal) points.push(currentVal);
-    if(points.length < 2) points.push(currentVal);
+    if(points[points.length-1].value !== currentVal || points[points.length-1].date !== now) points.push({date:now, value:currentVal});
+    if(points.length < 2) points.push({date:now, value:currentVal});
     return points;
   }
 
@@ -3331,24 +3335,29 @@
     return null;
   }
 
-  function drawHomeChartFromPoints(points){
+  function drawHomeChartFromPoints(rows){
     var svg = document.getElementById("homeChartSvg");
     var w=320, h=90, pad=4;
-    var maxV = Math.max.apply(null, points), minV = Math.min.apply(null, points);
+    var values = rows.map(function(r){ return r.value; });
+    var maxV = Math.max.apply(null, values), minV = Math.min.apply(null, values);
     var range = Math.max(maxV-minV, 1);
-    var stepX = (w-pad*2)/(points.length-1);
-    var coords = points.map(function(v,i){
+    var stepX = (w-pad*2)/(values.length-1);
+    var coords = values.map(function(v,i){
       var x = pad + i*stepX;
       var y = h - pad - ((v-minV)/range)*(h-pad*2);
       return [x,y];
     });
     var linePath = "M" + coords.map(function(c){return c[0].toFixed(1)+","+c[1].toFixed(1);}).join(" L");
     var areaPath = linePath + " L" + coords[coords.length-1][0].toFixed(1) + "," + (h-pad) + " L" + coords[0][0].toFixed(1) + "," + (h-pad) + " Z";
-    var lineColor = points[points.length-1] >= points[0] ? "#00d964" : "#ff453a";
+    var lineColor = values[values.length-1] >= values[0] ? "#00d964" : "#ff453a";
     svg.innerHTML =
       '<defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+lineColor+'" stop-opacity="0.32"/><stop offset="100%" stop-color="'+lineColor+'" stop-opacity="0"/></linearGradient></defs>' +
       '<path d="'+areaPath+'" fill="url(#hg)"/>' +
-      '<path d="'+linePath+'" fill="none" stroke="'+lineColor+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+      '<path d="'+linePath+'" fill="none" stroke="'+lineColor+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<line id="homeCrosshairLine" x1="0" y1="0" x2="0" y2="'+h+'" stroke="var(--text-faint)" stroke-width="1" stroke-dasharray="2,2" style="display:none;"/>' +
+      '<circle id="homeCrosshairDot" r="4" fill="'+lineColor+'" stroke="var(--bg)" stroke-width="1.5" style="display:none;"/>';
+    var tooltipPoints = rows.map(function(r){ return {date:r.date, price:r.value}; });
+    attachChartTooltip(svg, coords, tooltipPoints, "home", state.currency);
   }
   function renderHomeChart(){
     var cutoffTime = rangeCutoffTime(uiState.homeRange);
@@ -3461,13 +3470,13 @@
         var units = 0;
         (h.transactions||[]).forEach(function(tx){
           var txTime = new Date(tx.date+"T"+(tx.time||"00:00")).getTime();
-          if(txTime <= cutoffTime) units += (tx.type==="buy" ? tx.units : -tx.units);
+          if(txTime <= cutoffTime) units += (tx.type==="sell" ? -tx.units : tx.units);
         });
         units = Math.max(0, units);
         var px = priceAt(h.ticker, dateStr);
         if(px !== null) investValue += convertAmount(units*px, currencyForTicker(h.ticker), state.currency);
       });
-      return investValue + cashLiabNow;
+      return {date:dateStr, value: investValue + cashLiabNow};
     });
   }
 
@@ -3520,10 +3529,10 @@
       (h.transactions||[]).forEach(function(tx){
         var principal = convertAmount(tx.units * tx.pricePerUnit, curr, state.currency);
         var cost = convertAmount((Number(tx.fees)||0) + (Number(tx.taxes)||0), curr, state.currency);
-        var flowAmt = tx.type==="buy" ? (principal + cost) : -(principal - cost);
+        var flowAmt = tx.type==="bonus" ? cost : (tx.type==="sell" ? -(principal - cost) : (principal + cost));
         var txTime = new Date(tx.date+"T"+(tx.time||"00:00")).getTime();
         flows.push({ time: txTime, amount: flowAmt });
-        investedCapital += tx.type==="buy" ? principal : -principal;
+        investedCapital += tx.type==="bonus" ? 0 : (tx.type==="sell" ? -principal : principal);
         totalCosts += cost;
       });
     });
@@ -3540,7 +3549,7 @@
         var units = 0;
         (h.transactions||[]).forEach(function(tx){
           var txTime = new Date(tx.date+"T"+(tx.time||"00:00")).getTime();
-          if(txTime <= cutoff) units += (tx.type==="buy" ? tx.units : -tx.units);
+          if(txTime <= cutoff) units += (tx.type==="sell" ? -tx.units : tx.units);
         });
         units = Math.max(0, units);
         var px = priceAt(h.ticker, dateStr);
@@ -3663,10 +3672,16 @@
     svg.innerHTML =
       '<defs><linearGradient id="pfg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+lineColor+'" stop-opacity="0.32"/><stop offset="100%" stop-color="'+lineColor+'" stop-opacity="0"/></linearGradient></defs>' +
       '<path d="'+areaPath+'" fill="url(#pfg)"/>' +
-      '<path d="'+linePath+'" fill="none" stroke="'+lineColor+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+      '<path d="'+linePath+'" fill="none" stroke="'+lineColor+'" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<line id="perfLineCrosshairLine" x1="0" y1="0" x2="0" y2="'+h+'" stroke="var(--text-faint)" stroke-width="1" stroke-dasharray="2,2" style="display:none;"/>' +
+      '<circle id="perfLineCrosshairDot" r="4" fill="'+lineColor+'" stroke="var(--bg)" stroke-width="1.5" style="display:none;"/>';
     var firstDate = new Date(indexSeries[0].date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
     var lastDate = new Date(indexSeries[indexSeries.length-1].date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
     document.getElementById("perfLineLabels").innerHTML = '<span>'+firstDate+'</span><span>'+lastDate+'</span>';
+    attachChartTooltip(svg, coords, indexSeries, "perfLine", null, function(p){
+      var pct = p.index - 100;
+      return (pct>=0?"+":"") + pct.toFixed(1) + "%";
+    });
   }
 
   function renderPerfContent(data){
@@ -3859,8 +3874,12 @@
     var investSummary = document.getElementById("nwInvestSummary");
     if(state.holdings.length===0){
       investSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">◎</div><div class="nc-title">'+t("empty_not_connected_title")+'</div><div class="nc-sub">'+t("empty_invest_not_connected_sub")+'</div></div>';
+      investSummary.onclick = null;
+      investSummary.style.cursor = "default";
     } else {
-      investSummary.innerHTML = '<div class="list-card"><div class="row-card" style="cursor:default;"><div class="left"><div class="ticker-line"><span class="ticker">'+state.holdings.length+' '+plural(state.holdings.length,"position_one","position_other")+'</span></div><div class="meta">'+t("across_sectors")+' '+ (new Set(state.holdings.map(function(h){return h.sector;})).size) +' '+t("sectors_word")+'</div></div><div class="right"><div class="val num">'+(uiState.hideAmounts?redactBar("sm"):fmt(iv))+'</div></div></div></div>';
+      investSummary.innerHTML = '<div class="list-card"><div class="row-card" style="cursor:pointer;"><div class="left"><div class="ticker-line"><span class="ticker">'+state.holdings.length+' '+plural(state.holdings.length,"position_one","position_other")+'</span></div><div class="meta">'+t("across_sectors")+' '+ (new Set(state.holdings.map(function(h){return h.sector;})).size) +' '+t("sectors_word")+'</div></div><div class="right"><div class="val num">'+(uiState.hideAmounts?redactBar("sm"):fmt(iv))+'</div></div></div></div>';
+      investSummary.style.cursor = "pointer";
+      investSummary.onclick = function(){ goToPage("analytics"); };
     }
 
     var cashList = document.getElementById("nwCashList");
@@ -4092,7 +4111,7 @@
       var curr = currencyForTicker(h.ticker);
       var value=h.shares*h.currentPrice, cost=h.shares*h.avgCost, gain=value-cost, gainPct=cost>0?(gain/cost)*100:0;
       var row=document.createElement("div"); row.className="row-card";
-      row.innerHTML = '<div class="left"><div class="ticker-line"><span class="ticker">'+escapeHtml(h.ticker)+'</span><span class="name">'+escapeHtml(stockDisplayName(h.ticker, h.name)||"")+'</span></div><div class="meta">'+h.shares+' '+t("unit_sh")+' · '+t("unit_avg")+' '+fmtIn(h.avgCost, curr)+'</div></div>' +
+      row.innerHTML = '<div class="left" style="display:flex; align-items:center; gap:10px;"><span style="width:32px; height:32px; border-radius:50%; background:var(--surface-3); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem; flex-shrink:0; overflow:hidden;">'+logoInnerHtml(h.ticker)+'</span><div><div class="ticker-line"><span class="ticker">'+escapeHtml(h.ticker)+'</span><span class="name">'+escapeHtml(stockDisplayName(h.ticker, h.name)||"")+'</span></div><div class="meta">'+h.shares+' '+t("unit_sh")+' · '+t("unit_avg")+' '+fmtIn(h.avgCost, curr)+'</div></div></div>' +
         '<div class="right"><div class="val num">'+fmtIn(value, curr)+'</div><div class="gain num" style="color:'+(gain>=0?"var(--green)":"var(--red)")+'">'+fmtPct(gainPct)+'</div></div>';
       row.addEventListener("click", function(){ openStockDetail(h.id); });
       list.appendChild(row);
@@ -4215,6 +4234,7 @@
     document.getElementById("healthScoreNote").textContent = h.note;
   }
 
+  var expandedAllocSector = null;
   function renderAllocation(){
     renderHealthScore();
     var list = document.getElementById("allocList");
@@ -4232,17 +4252,41 @@
     var bySector = {};
     filtered.forEach(function(h){
       var v=h.shares*h.currentPrice;
-      if(!bySector[h.sector]) bySector[h.sector]={value:0,count:0};
+      if(!bySector[h.sector]) bySector[h.sector]={value:0,count:0,holdings:[]};
       bySector[h.sector].value+=v; bySector[h.sector].count+=1;
+      bySector[h.sector].holdings.push(h);
     });
-    Object.keys(bySector).map(function(k){return {sector:k,value:bySector[k].value,count:bySector[k].count};})
+    Object.keys(bySector).map(function(k){return {sector:k,value:bySector[k].value,count:bySector[k].count,holdings:bySector[k].holdings};})
       .sort(function(a,b){return b.value-a.value;}).forEach(function(e){
         var pct = totalValue>0?(e.value/totalValue)*100:0;
         var color = SECTOR_COLORS[e.sector]||"#6b6b6f";
-        var row=document.createElement("div"); row.className="alloc-row";
+        var expanded = expandedAllocSector === e.sector;
+        var row=document.createElement("div"); row.className="alloc-row"; row.style.cursor="pointer";
+        var subHtml = "";
+        if(expanded){
+          subHtml = '<div class="alloc-sub-holdings" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">' +
+            e.holdings.slice().sort(function(a,b){ return (b.shares*b.currentPrice)-(a.shares*a.currentPrice); }).map(function(h){
+              var hv = h.shares*h.currentPrice;
+              var hpct = e.value>0 ? (hv/e.value)*100 : 0;
+              return '<div class="alloc-sub-row" data-hid="'+h.id+'" style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; background:var(--surface-2); border-radius:10px; cursor:pointer;">' +
+                '<span style="display:flex; align-items:center; gap:8px; min-width:0;"><span style="width:24px; height:24px; border-radius:50%; background:var(--surface-3); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:800; flex-shrink:0; overflow:hidden;">'+logoInnerHtml(h.ticker)+'</span><span style="font-weight:700; font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">'+escapeHtml(h.ticker)+'</span></span>' +
+                '<span style="font-size:0.78rem; color:var(--text-muted); flex-shrink:0;" class="num">'+fmt(hv)+' · '+hpct.toFixed(0)+'%</span></div>';
+            }).join("") +
+          '</div>';
+        }
         row.innerHTML='<div class="top-line"><span class="sector-name"><span class="dot" style="background:'+color+'"></span>'+sectorLabel(e.sector)+'</span><span class="pct num">'+pct.toFixed(1)+'%</span></div>' +
           '<div class="bar-track"><div class="bar-fill" style="width:'+pct.toFixed(1)+'%;background:'+color+'"></div></div>' +
-          '<div class="sub num"><span>'+e.count+' holding'+(e.count===1?"":"s")+'</span><span>'+fmt(e.value)+'</span></div>';
+          '<div class="sub num"><span>'+e.count+' holding'+(e.count===1?"":"s")+'</span><span>'+fmt(e.value)+'</span></div>' + subHtml;
+        row.addEventListener("click", function(){
+          expandedAllocSector = expanded ? null : e.sector;
+          renderAllocation();
+        });
+        row.querySelectorAll(".alloc-sub-row").forEach(function(sr){
+          sr.addEventListener("click", function(evt){
+            evt.stopPropagation();
+            openStockDetail(sr.dataset.hid);
+          });
+        });
         list.appendChild(row);
       });
   }
@@ -4656,7 +4700,7 @@
   var editingHoldingId = null;
   var pendingSecurity = null;
   var holdingOverlay = document.getElementById("holdingOverlay");
-  var HOLD_TXN_LABELS = { buy:"txn_buy", sell:"txn_sell" };
+  var HOLD_TXN_LABELS = { buy:"txn_buy", sell:"txn_sell", bonus:"txn_bonus" };
 
   function computeHoldingStats(h){
     var txns = (h.transactions || []).slice().sort(function(a,b){
@@ -4666,15 +4710,15 @@
     });
     var units = 0, cost = 0;
     txns.forEach(function(t){
-      if(t.type === "buy"){
-        units += t.units;
-        cost += t.units*t.pricePerUnit + (t.fees||0) + (t.taxes||0);
-      } else {
+      if(t.type === "sell"){
         var avg = units>0 ? cost/units : 0;
         cost -= Math.min(t.units, units) * avg;
         units -= t.units;
         if(units < 0) units = 0;
         if(cost < 0) cost = 0;
+      } else {
+        units += t.units;
+        cost += (t.type === "bonus" ? 0 : t.units*t.pricePerUnit) + (t.fees||0) + (t.taxes||0);
       }
     });
     return { shares: units, avgCost: units>0 ? cost/units : 0 };
@@ -4706,7 +4750,7 @@
       var total = tx.units*tx.pricePerUnit + (tx.fees||0) + (tx.taxes||0);
       var row = document.createElement("div"); row.className = "liab-txn-row";
       row.innerHTML =
-        '<div class="ltr-left"><span class="ltr-type '+(tx.type==="buy"?"repayment":"borrowed")+'">'+t(HOLD_TXN_LABELS[tx.type])+'</span><span class="ltr-date">'+dateStr+" · "+tx.units+" @ "+fmt(tx.pricePerUnit)+'</span></div>' +
+        '<div class="ltr-left"><span class="ltr-type '+(tx.type==="sell"?"borrowed":"repayment")+'">'+t(HOLD_TXN_LABELS[tx.type])+'</span><span class="ltr-date">'+dateStr+" · "+tx.units+" @ "+fmt(tx.pricePerUnit)+'</span></div>' +
         '<span class="ltr-amt '+(tx.type==="buy"?"borrowed":"repayment")+'">'+fmt(total)+'</span>' +
         '<button class="ltr-del" aria-label="Delete transaction">×</button>';
       row.querySelector(".ltr-del").addEventListener("click", function(){
@@ -4751,7 +4795,17 @@
     document.getElementById("hTaxes").value = "";
     document.getElementById("hDescription").value = "";
     updateHoldingTotalPreview();
+    applyTxnTypeUiState();
   }
+  function applyTxnTypeUiState(){
+    var type = document.getElementById("hTxnType").value;
+    var isBonus = type === "bonus";
+    document.getElementById("hPriceFieldWrap").style.display = isBonus ? "none" : "";
+    document.getElementById("hBonusNote").style.display = isBonus ? "block" : "none";
+    if(isBonus){ document.getElementById("hPricePerUnit").value = "0"; }
+    updateHoldingTotalPreview();
+  }
+  document.getElementById("hTxnType").addEventListener("change", applyTxnTypeUiState);
 
   function populatePortfolioSelect(defaultId){
     var sel = document.getElementById("hPortfolio");
@@ -4900,6 +4954,7 @@
   }
   function parseImportType(raw){
     var s = String(raw||"").trim().toLowerCase();
+    if(s.indexOf("منحة")>=0 || s.indexOf("bonus")>=0 || s.indexOf("grant")>=0) return "bonus";
     if(s.indexOf("شراء")>=0 || s.indexOf("buy")>=0) return "buy";
     if(s.indexOf("بيع")>=0 || s.indexOf("sell")>=0) return "sell";
     return null;
@@ -4926,6 +4981,7 @@
       var typeVal = parseImportType(row[cols.type]);
       var qtyVal = parseFloat(row[cols.qty]);
       var priceVal = parseFloat(row[cols.price]);
+      if(typeVal === "bonus" && isNaN(priceVal)) priceVal = 0;
       var codeVal = row[cols.code];
       var nameVal = cols.name!==undefined ? row[cols.name] : "";
       var timeVal = cols.time!==undefined ? String(row[cols.time]||"") : "";
@@ -5198,7 +5254,7 @@
     attachChartTooltip(svg, coords, points, tooltipPrefix, currency || "$");
     return true;
   }
-  function attachChartTooltip(svg, coords, points, prefix, currency){
+  function attachChartTooltip(svg, coords, points, prefix, currency, formatFn){
     var w=320;
     var line = document.getElementById(prefix+"CrosshairLine");
     var dot = document.getElementById(prefix+"CrosshairDot");
@@ -5213,7 +5269,7 @@
       var c = coords[idx], p = points[idx];
       line.setAttribute("x1", c[0]); line.setAttribute("x2", c[0]); line.style.display = "block";
       dot.setAttribute("cx", c[0]); dot.setAttribute("cy", c[1]); dot.style.display = "block";
-      priceEl.textContent = fmtIn(p.price, currency);
+      priceEl.textContent = formatFn ? formatFn(p) : fmtIn(p.price, currency);
       dateEl.textContent = new Date(p.date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
       var pctX = (c[0]/w) * rect.width;
       tooltip.style.left = Math.max(30, Math.min(rect.width-30, pctX)) + "px";
