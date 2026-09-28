@@ -742,6 +742,16 @@
       <div class="search-box"><input id="quickAddInput" data-i18n-ph="search_stocks_quick" placeholder="Search for stocks to add quickly" autocomplete="off" /></div>
       <div class="search-results" id="quickAddResults" style="display:none;"></div>
 
+      <div id="portfolioCashCard" style="display:none;">
+        <div class="section-heading"><h2 data-i18n="portfolio_cash">Cash in portfolio</h2></div>
+        <div class="list-card">
+          <div class="row-card" id="portfolioCashRow" style="cursor:pointer;">
+            <div class="left"><div class="ticker-line"><span class="ticker" data-i18n="portfolio_cash_uninvested">Uninvested cash</span></div></div>
+            <div class="right"><div class="val num" id="portfolioCashValue">$0.00</div></div>
+          </div>
+        </div>
+      </div>
+
       <div class="section-heading"><h2 data-i18n="positions">Positions</h2><span class="totals" id="holdingsCount"></span></div>
       <div class="list-card" id="holdingsList"></div>
       <button class="add-btn" id="addHoldingBtn" data-i18n="add_holding_manually">+ Add holding manually</button>
@@ -977,7 +987,6 @@
     <button class="nav-btn" data-page="wealth"><span class="g">✦</span><span data-i18n="nav_wealth">Wealth</span></button>
   </div>
   <button class="search-fab" id="searchFabBtn" aria-label="Watchlist"><span class="g">☆</span><span class="slabel" data-i18n="watchlist">Watchlist</span></button>
-  <button class="fab" id="fabBtn"><span class="circle">+</span><span class="flabel" id="fabLabel" data-i18n="import">Import</span></button>
 </div>
 
 <!-- Holding modal -->
@@ -1326,6 +1335,37 @@
   </div>
 </div>
 
+<!-- Portfolio cash modal -->
+<div class="overlay" id="portfolioCashOverlay">
+  <div class="modal">
+    <h3><span data-i18n="portfolio_cash">Cash in portfolio</span><button id="closePortfolioCashModal" aria-label="Close">×</button></h3>
+
+    <div id="pcTxnHistory" style="display:none;">
+      <div class="section-heading" style="margin:0 0 8px;"><h2 style="font-size:0.95rem;" data-i18n="transactions">Transactions</h2><span class="totals" id="pcBalancePreviewTop"></span></div>
+      <div class="list-card" id="pcTxnList" style="margin-bottom:18px;"></div>
+    </div>
+
+    <div class="field-row">
+      <div class="field"><label for="pcTxnType" data-i18n="transaction_type">Transaction type</label>
+        <select id="pcTxnType" style="display:none;"><option value="deposit" data-i18n="deposit">Deposit</option><option value="withdrawal" data-i18n="withdrawal">Withdrawal</option></select>
+        <button type="button" class="select-trigger" id="pcTxnTypeTrigger"><span class="tlabel"></span><span class="chev">▾</span></button>
+      </div>
+      <div class="field"><label for="pcTxnDate" data-i18n="date">Date</label><input id="pcTxnDate" type="date" /></div>
+    </div>
+    <div class="field"><label for="pcAmount" data-i18n="amount">Amount</label>
+      <div class="amount-row"><input id="pcAmount" type="number" step="any" inputmode="decimal" placeholder="400.00" /><button type="button" class="currency-chip" id="pcCurrencyTrigger">USD ▾</button></div>
+    </div>
+
+    <div class="modal-actions" style="margin-bottom:10px;">
+      <span data-i18n="new_balance">New balance</span>
+      <span id="pcBalancePreview" class="num" style="flex:1; text-align:right; font-weight:800; font-size:1.1rem;">$0.00</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn primary" id="savePortfolioCashBtn" data-i18n="add_transaction">Add transaction</button>
+    </div>
+  </div>
+</div>
+
 <!-- Goal modal -->
 <div class="overlay" id="goalOverlay">
   <div class="modal">
@@ -1367,37 +1407,6 @@
   </div>
 </div>
 
-<!-- Import chooser sheet -->
-<div class="overlay" id="importSheetOverlay">
-  <div class="modal">
-    <div class="settings-section-label" style="margin-top:0;" data-i18n="add_new_accounts">Add new accounts</div>
-    <div class="settings-list">
-      <button class="settings-row" id="importInvestRow" type="button">
-        <span class="sr-icon">◎</span>
-        <span class="sr-text"><span class="sr-title" data-i18n="investments">Investments</span><span class="sr-sub" data-i18n="investments_sub">Stocks, ETFs and other holdings</span></span>
-        <span class="sr-chev">›</span>
-      </button>
-      <button class="settings-row" id="importCashRow" type="button">
-        <span class="sr-icon">$</span>
-        <span class="sr-text"><span class="sr-title" data-i18n="cash">Cash</span><span class="sr-sub" data-i18n="cash_sub_edit">Edit your USD or SAR cash balance</span></span>
-        <span class="sr-chev">›</span>
-      </button>
-      <button class="settings-row" id="importLiabRow" type="button">
-        <span class="sr-icon">◈</span>
-        <span class="sr-text"><span class="sr-title" data-i18n="liabilities">Liabilities</span><span class="sr-sub" data-i18n="liabilities_sub">Credit cards, loans, mortgages, etc.</span></span>
-        <span class="sr-chev">›</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Pick a cash account -->
-<div class="overlay" id="cashPickerOverlay">
-  <div class="modal">
-    <h3><span data-i18n="cash">Cash</span><button id="closeCashPickerModal" aria-label="Close">×</button></h3>
-    <div class="list-card" id="cashPickerList"></div>
-  </div>
-</div>
 
 <!-- Annual report -->
 <div class="overlay" id="annualReportOverlay">
@@ -1720,6 +1729,7 @@ window.__logoNextFallback = function(img){
       net_worth_then:"Net worth then", net_worth_now:"Net worth now",
       interest_apy:"Interest rate (APY %)", edit_cash_account:"Edit cash account", currency:"Currency",
       sub_realestate:"Real estate", sub_deposits:"Deposits", real_estate_funds:"Real estate funds", deposits:"Deposits",
+      portfolio_cash:"Cash in portfolio", portfolio_cash_uninvested:"Uninvested cash",
       add_re_fund:"Add real estate fund", edit_re_fund:"Edit real estate fund", fund_type:"Fund type",
       fund_type_income:"Income-generating", fund_type_development:"Development", fund_type_fixlease:"Fix & Lease",
       price_per_unit:"Current price per unit", units:"units", current_value:"Current value",
@@ -1969,6 +1979,7 @@ window.__logoNextFallback = function(img){
       net_worth_then:"صافي الثروة وقتها", net_worth_now:"صافي الثروة الآن",
       interest_apy:"معدل الفائدة (APY %)", edit_cash_account:"تعديل الحساب النقدي", currency:"العملة",
       sub_realestate:"عقاري", sub_deposits:"ودائع", real_estate_funds:"صناديق عقارية", deposits:"الودائع",
+      portfolio_cash:"النقد داخل المحفظة", portfolio_cash_uninvested:"نقد غير مستثمر",
       add_re_fund:"إضافة صندوق عقاري", edit_re_fund:"تعديل الصندوق العقاري", fund_type:"نوع الصندوق",
       fund_type_income:"مدر للدخل", fund_type_development:"تطويري", fund_type_fixlease:"تأجير بعد تطوير",
       price_per_unit:"سعر الوحدة الحالي", units:"وحدة", current_value:"القيمة الحالية",
@@ -2821,6 +2832,7 @@ window.__logoNextFallback = function(img){
     if(state.portfolios.length === 0){
       state.portfolios.push({ id:"default", name:"Main portfolio" });
     }
+    normalizePortfolios();
     var defaultId = state.portfolios[0].id;
     state.holdings.forEach(function(h){
       if(!h.portfolioId) h.portfolioId = defaultId;
@@ -2839,7 +2851,21 @@ window.__logoNextFallback = function(img){
   // Cash accounts are a free-form list the user manages themselves (add/rename/delete) —
   // this only fills in missing fields on load; it never merges accounts together and never
   // auto-creates a default account.
+  function normalizePortfolios(){
+    state.portfolios.forEach(function(p){
+      if(typeof p.cashBalance !== "number" || isNaN(p.cashBalance)) p.cashBalance = 0;
+      if(!p.cashCurrency) p.cashCurrency = "$";
+      if(!p.cashTransactions) p.cashTransactions = [];
+    });
+  }
+  var LEGACY_DEFAULT_CASH_NAMES = ["Dollar cash","Riyal cash","النقد بالدولار","نقد بالريال"];
   function consolidateCashAccounts(){
+    // one-time cleanup: drop the old forced-default accounts if they were never actually used
+    state.cash = state.cash.filter(function(c){
+      var isLegacyDefault = LEGACY_DEFAULT_CASH_NAMES.indexOf(c.name) !== -1;
+      var isUnused = (!c.balance) && (!c.transactions || c.transactions.length === 0);
+      return !(isLegacyDefault && isUnused);
+    });
     state.cash.forEach(function(c){
       if(!c.id) c.id = uid();
       if(!c.currency) c.currency = "$";
@@ -3080,7 +3106,13 @@ window.__logoNextFallback = function(img){
     return t;
   }
 
-  function netWorth(){ return investTotal() + cashTotal() + realEstateTotal() + depositsTotal() - liabTotal(); }
+  function portfolioCashTotal(){
+    var t=0;
+    state.portfolios.forEach(function(p){ t += convertAmount(p.cashBalance||0, p.cashCurrency||state.currency, state.currency); });
+    return t;
+  }
+
+  function netWorth(){ return investTotal() + cashTotal() + realEstateTotal() + depositsTotal() + portfolioCashTotal() - liabTotal(); }
 
   // ---------- Transaction-derived net worth timeline ----------
   function investValueAt(cutoffTime){
@@ -3245,7 +3277,7 @@ window.__logoNextFallback = function(img){
   var PAGE_TITLE_KEYS = { home:"nav_home", networth:"nav_networth", analytics:"nav_analytics", wealth:"nav_wealth" };
   var currentPage = "home";
 
-  function setFab(page){ document.getElementById("fabLabel").textContent = t("import"); }
+  function setFab(page){}
 
   navButtons.forEach(function(btn){
     btn.addEventListener("click", function(){ goToPage(btn.dataset.page); });
@@ -3258,7 +3290,6 @@ window.__logoNextFallback = function(img){
     document.getElementById("page-"+page).classList.add("active");
     document.querySelector("header.top").style.display = "flex";
     document.querySelector(".brand-header").style.display = "flex";
-    document.getElementById("fabBtn").style.display = "flex";
     document.getElementById("searchFabBtn").classList.remove("active");
     var headerTitleEl = document.getElementById("headerTitle");
     var nwSubtabsEl = document.getElementById("nwSubtabs");
@@ -3275,33 +3306,6 @@ window.__logoNextFallback = function(img){
     window.scrollTo(0,0);
     renderAll();
   }
-
-  var importSheetOverlay = document.getElementById("importSheetOverlay");
-  document.getElementById("fabBtn").addEventListener("click", function(){
-    importSheetOverlay.classList.add("open");
-  });
-  importSheetOverlay.addEventListener("click", function(e){ if(e.target===importSheetOverlay) importSheetOverlay.classList.remove("open"); });
-  document.getElementById("importInvestRow").addEventListener("click", function(){
-    importSheetOverlay.classList.remove("open"); openHoldingModal(null);
-  });
-  var cashPickerOverlay = document.getElementById("cashPickerOverlay");
-  document.getElementById("importCashRow").addEventListener("click", function(){
-    importSheetOverlay.classList.remove("open");
-    var list = document.getElementById("cashPickerList");
-    list.innerHTML = "";
-    state.cash.forEach(function(c){
-      var row = document.createElement("div"); row.className = "row-card";
-      row.innerHTML = '<div class="left"><div class="ticker-line"><span class="ticker">'+escapeHtml(c.name)+'</span></div></div><div class="right"><span class="val num">'+fmtIn(c.balance, c.currency||state.currency)+'</span></div>';
-      row.addEventListener("click", function(){ cashPickerOverlay.classList.remove("open"); openCashModal(c.id); });
-      list.appendChild(row);
-    });
-    cashPickerOverlay.classList.add("open");
-  });
-  document.getElementById("closeCashPickerModal").addEventListener("click", function(){ cashPickerOverlay.classList.remove("open"); });
-  cashPickerOverlay.addEventListener("click", function(e){ if(e.target===cashPickerOverlay) cashPickerOverlay.classList.remove("open"); });
-  document.getElementById("importLiabRow").addEventListener("click", function(){
-    importSheetOverlay.classList.remove("open"); openLiabModal(null);
-  });
 
   var pageBeforeSearch = "home";
   var selectedWatchlistId = "default";
@@ -3457,7 +3461,6 @@ window.__logoNextFallback = function(img){
     document.getElementById("page-search").classList.add("active");
     document.querySelector("header.top").style.display = "none";
     document.querySelector(".brand-header").style.display = "none";
-    document.getElementById("fabBtn").style.display = "none";
     document.getElementById("searchFabBtn").classList.add("active");
     currentPage = "search";
     document.getElementById("searchPageInput").value = "";
@@ -3472,7 +3475,6 @@ window.__logoNextFallback = function(img){
     document.getElementById("searchFabBtn").classList.remove("active");
     document.querySelector("header.top").style.display = "flex";
     document.querySelector(".brand-header").style.display = "flex";
-    document.getElementById("fabBtn").style.display = "flex";
     navBack.closeLayer();
     goToPage(pageBeforeSearch);
   }
@@ -4134,7 +4136,7 @@ window.__logoNextFallback = function(img){
     var investSummary = document.getElementById("nwInvestSummary");
     var activeHoldingsList = activeHoldings();
     if(activeHoldingsList.length===0){
-      investSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">◎</div><div class="nc-title">'+t("empty_not_connected_title")+'</div><div class="nc-sub">'+t("empty_invest_not_connected_sub")+'</div></div>';
+      investSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">◎</div><div class="nc-sub">'+t("empty_invest_not_connected_sub")+'</div></div>';
       investSummary.onclick = null;
       investSummary.style.cursor = "default";
     } else {
@@ -4146,7 +4148,7 @@ window.__logoNextFallback = function(img){
     var cashList = document.getElementById("nwCashList");
     cashList.innerHTML = "";
     if(state.cash.length===0){
-      cashList.outerHTML = '<div class="notconnected-card" id="nwCashList"><div class="nc-icon">$</div><div class="nc-title">'+t("empty_not_connected_title")+'</div><div class="nc-sub">'+t("empty_cash_not_connected_sub")+'</div></div>';
+      cashList.outerHTML = '<div class="notconnected-card" id="nwCashList"><div class="nc-icon">$</div><div class="nc-sub">'+t("empty_cash_not_connected_sub")+'</div></div>';
     } else {
       cashList.className = "list-card";
       state.cash.forEach(function(c){
@@ -4160,7 +4162,7 @@ window.__logoNextFallback = function(img){
 
     var reSummary = document.getElementById("nwRESummary");
     if(state.realEstateFunds.length===0){
-      reSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">◈</div><div class="nc-title">'+t("empty_not_connected_title")+'</div><div class="nc-sub">'+t("empty_re_not_connected_sub")+'</div></div>';
+      reSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">◈</div><div class="nc-sub">'+t("empty_re_not_connected_sub")+'</div></div>';
     } else {
       var reHtml = '<div class="list-card">';
       state.realEstateFunds.forEach(function(f){
@@ -4178,7 +4180,7 @@ window.__logoNextFallback = function(img){
 
     var depositsSummary = document.getElementById("nwDepositsSummary");
     if(state.deposits.length===0){
-      depositsSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">%</div><div class="nc-title">'+t("empty_not_connected_title")+'</div><div class="nc-sub">'+t("empty_deposits_not_connected_sub")+'</div></div>';
+      depositsSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">%</div><div class="nc-sub">'+t("empty_deposits_not_connected_sub")+'</div></div>';
     } else {
       var depHtml = '<div class="list-card">';
       state.deposits.forEach(function(d){
@@ -4196,7 +4198,7 @@ window.__logoNextFallback = function(img){
 
     var liabSummary = document.getElementById("nwLiabSummary");
     if(state.liabilities.length===0){
-      liabSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">◈</div><div class="nc-title">'+t("empty_not_connected_title")+'</div><div class="nc-sub">'+t("empty_liab_not_connected_sub")+'</div></div>';
+      liabSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">◈</div><div class="nc-sub">'+t("empty_liab_not_connected_sub")+'</div></div>';
     } else {
       var lHtml = '<div class="list-card">';
       state.liabilities.forEach(function(l){
@@ -4292,7 +4294,9 @@ window.__logoNextFallback = function(img){
     function closeLayer(){
       if(suppress || depth<=0) return;
       depth--;
-      try{ history.back(); }catch(e){}
+      suppress = true; // this history.back() is us, not the user — the popstate it triggers must not also run closeTopLayer()
+      try{ history.back(); }catch(e){ suppress = false; }
+      setTimeout(function(){ suppress = false; }, 500); // safety net in case popstate never fires
     }
     function closeTopLayer(){
       var openOverlay = null;
@@ -4305,6 +4309,7 @@ window.__logoNextFallback = function(img){
       if(currentPage === "search"){ leaveSearchPage(); return; }
     }
     window.addEventListener("popstate", function(){
+      if(suppress){ suppress = false; return; } // our own closeLayer() triggered this — already handled
       if(depth > 0){
         depth--;
         suppress = true;
@@ -4445,6 +4450,18 @@ window.__logoNextFallback = function(img){
   }
   function renderHoldings(){
     renderPortfolioChips();
+    var cashCard = document.getElementById("portfolioCashCard");
+    if(selectedPortfolioId === "all"){
+      cashCard.style.display = "none";
+    } else {
+      var curP = state.portfolios.find(function(x){ return x.id === selectedPortfolioId; });
+      if(curP){
+        cashCard.style.display = "block";
+        document.getElementById("portfolioCashValue").textContent = uiState.hideAmounts ? redactBar("sm") : fmtIn(curP.cashBalance||0, curP.cashCurrency||"$");
+      } else {
+        cashCard.style.display = "none";
+      }
+    }
     var list = document.getElementById("holdingsList");
     var count = document.getElementById("holdingsCount");
     list.innerHTML = "";
@@ -4502,7 +4519,7 @@ window.__logoNextFallback = function(img){
       renderAnalyticsForPortfolio();
       return;
     }
-    var np = { id: uid(), name: name };
+    var np = { id: uid(), name: name, cashBalance:0, cashCurrency:"$", cashTransactions:[] };
     state.portfolios.push(np);
     save();
     selectedPortfolioId = np.id;
@@ -5622,7 +5639,6 @@ window.__logoNextFallback = function(img){
     document.getElementById("page-stockdetail").classList.add("active");
     document.querySelector("header.top").style.display = "none";
     document.querySelector(".brand-header").style.display = "none";
-    document.getElementById("fabBtn").style.display = "none";
     currentPage = "stockdetail";
     dtabButtons.forEach(function(b){b.classList.remove("active");});
     document.querySelector('.dtab-btn[data-dtab="overview"]').classList.add("active");
@@ -5636,7 +5652,6 @@ window.__logoNextFallback = function(img){
   function leaveStockDetail(){
     document.querySelector("header.top").style.display = "flex";
     document.querySelector(".brand-header").style.display = "flex";
-    document.getElementById("fabBtn").style.display = "flex";
     navBack.closeLayer();
     goToPage(pageBeforeDetail);
   }
@@ -6177,6 +6192,94 @@ window.__logoNextFallback = function(img){
       state.cash = state.cash.filter(function(x){return x.id!==editingCashId;});
       save(); cashOverlay.classList.remove("open"); renderAll();
     });
+  });
+
+  // ---------- Portfolio cash modal (uninvested cash held inside an investment portfolio) ----------
+  var portfolioCashOverlay = document.getElementById("portfolioCashOverlay");
+  function currentPortfolio(){ return state.portfolios.find(function(x){return x.id===selectedPortfolioId;}); }
+  function renderPortfolioCashTxnHistory(p){
+    var wrap = document.getElementById("pcTxnHistory");
+    var list = document.getElementById("pcTxnList");
+    var txns = p.cashTransactions || [];
+    document.getElementById("pcBalancePreviewTop").textContent = fmtIn(p.cashBalance||0, p.cashCurrency||"$");
+    if(txns.length === 0){ wrap.style.display = "none"; return; }
+    wrap.style.display = "block";
+    list.innerHTML = "";
+    txns.slice().sort(function(a,b){ return new Date(b.date)-new Date(a.date); }).forEach(function(tx){
+      var dateStr = new Date(tx.date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
+      var row = document.createElement("div"); row.className = "liab-txn-row";
+      row.innerHTML =
+        '<div class="ltr-left"><span class="ltr-type '+(tx.type==="deposit"?"repayment":"borrowed")+'">'+t(tx.type==="deposit"?"deposit":"withdrawal")+'</span><span class="ltr-date">'+dateStr+'</span></div>' +
+        '<span class="ltr-amt '+(tx.type==="deposit"?"repayment":"borrowed")+'">'+(tx.type==="deposit"?"+":"-")+fmtIn(tx.amount, p.cashCurrency||"$")+'</span>' +
+        '<button class="ltr-del" aria-label="Delete transaction">×</button>';
+      row.querySelector(".ltr-del").addEventListener("click", function(){
+        p.cashTransactions = p.cashTransactions.filter(function(x){ return x.id !== tx.id; });
+        p.cashBalance += (tx.type==="deposit" ? -tx.amount : tx.amount);
+        save();
+        renderPortfolioCashTxnHistory(p);
+        updatePortfolioCashPreview();
+        renderAll();
+      });
+      list.appendChild(row);
+    });
+  }
+  function updatePortfolioCashPreview(){
+    var p = currentPortfolio();
+    if(!p) return;
+    var amount = parseFloat(document.getElementById("pcAmount").value) || 0;
+    var type = document.getElementById("pcTxnType").value;
+    var delta = type === "withdrawal" ? -amount : amount;
+    document.getElementById("pcBalancePreview").textContent = fmtIn((p.cashBalance||0) + delta, p.cashCurrency||"$");
+  }
+  document.getElementById("pcAmount").addEventListener("input", updatePortfolioCashPreview);
+  document.getElementById("pcTxnType").addEventListener("change", updatePortfolioCashPreview);
+  document.getElementById("pcCurrencyTrigger").addEventListener("click", function(){
+    var p = currentPortfolio();
+    if(!p) return;
+    var select = document.getElementById("currencySelect");
+    openPicker(t("currency"), optionsFromSelect(select), p.cashCurrency||"$").then(function(value){
+      p.cashCurrency = value;
+      save();
+      document.getElementById("pcCurrencyTrigger").textContent = (CURRENCY_LABELS[value]||value.trim()) + " ▾";
+      renderPortfolioCashTxnHistory(p);
+      updatePortfolioCashPreview();
+      renderAll();
+    });
+  });
+  function openPortfolioCashModal(){
+    var p = currentPortfolio();
+    if(!p) return;
+    document.getElementById("pcTxnType").value = "deposit";
+    syncTriggerLabel("pcTxnType", "pcTxnTypeTrigger");
+    document.getElementById("pcTxnDate").value = new Date().toISOString().slice(0,10);
+    document.getElementById("pcAmount").value = "";
+    document.getElementById("pcCurrencyTrigger").textContent = (CURRENCY_LABELS[p.cashCurrency||"$"]||"$") + " ▾";
+    renderPortfolioCashTxnHistory(p);
+    updatePortfolioCashPreview();
+    portfolioCashOverlay.classList.add("open");
+  }
+  document.getElementById("portfolioCashRow").addEventListener("click", openPortfolioCashModal);
+  document.getElementById("closePortfolioCashModal").addEventListener("click", function(){ portfolioCashOverlay.classList.remove("open"); });
+  portfolioCashOverlay.addEventListener("click", function(e){ if(e.target===portfolioCashOverlay) portfolioCashOverlay.classList.remove("open"); });
+  document.getElementById("savePortfolioCashBtn").addEventListener("click", function(){
+    var p = currentPortfolio();
+    if(!p) return;
+    var type = document.getElementById("pcTxnType").value;
+    var date = document.getElementById("pcTxnDate").value;
+    var amount = parseFloat(document.getElementById("pcAmount").value);
+    if(!date || isNaN(amount) || amount<=0){ showNotice(t("enter_date_amount")); return; }
+    if(!p.cashTransactions) p.cashTransactions = [];
+    p.cashTransactions.push({ id:uid(), type:type, amount:amount, date:date });
+    p.cashBalance = (p.cashBalance||0) + (type === "withdrawal" ? -amount : amount);
+    save();
+
+    document.getElementById("pcTxnType").value = "deposit";
+    syncTriggerLabel("pcTxnType", "pcTxnTypeTrigger");
+    document.getElementById("pcTxnDate").value = new Date().toISOString().slice(0,10);
+    document.getElementById("pcAmount").value = "";
+    renderPortfolioCashTxnHistory(p);
+    updatePortfolioCashPreview();
+    renderAll();
   });
 
   // ---------- Real estate fund modal ----------
@@ -6840,6 +6943,7 @@ window.__logoNextFallback = function(img){
         var defWlId = state.watchlists[0].id;
         state.watchlist.forEach(function(w){ if(!w.watchlistId) w.watchlistId = defWlId; });
         consolidateCashAccounts();
+        normalizePortfolios();
         save();
         e.target.value = "";
         settingsOverlay.classList.remove("open");
@@ -6855,6 +6959,7 @@ window.__logoNextFallback = function(img){
       if(!ok) return;
       state = { currency: state.currency, holdings:[], dividends:[], cash:[], liabilities:[], realEstateFunds:[], deposits:[], contributions:[], monthlyGoal:0, goals:[], sheetWebAppUrl: state.sheetWebAppUrl, watchlist:[], portfolios:[{id:"default", name:"Main portfolio"}], watchlists:[{id:"default", name:"My watchlist"}], monthlyExpenses:0, realizedPnL:[], emergencyFund:{ targetAmount:0, accountType:"", accountId:"" } };
       consolidateCashAccounts();
+      normalizePortfolios();
       save(); settingsOverlay.classList.remove("open"); renderAll();
     });
   });
@@ -6876,6 +6981,7 @@ window.__logoNextFallback = function(img){
   wireCustomSelect("lCategory", "lCategoryTrigger", "Category");
   wireCustomSelect("lTxnType", "lTxnTypeTrigger", "Transaction type");
   wireCustomSelect("cTxnType", "cTxnTypeTrigger", "Transaction type");
+  wireCustomSelect("pcTxnType", "pcTxnTypeTrigger", "Transaction type");
   wireCustomSelect("reFundType", "reFundTypeTrigger", "Fund type");
   wireCustomSelect("reTxnType", "reTxnTypeTrigger", "Transaction type");
   wireCustomSelect("depTermUnit", "depTermUnitTrigger", "Term unit");
