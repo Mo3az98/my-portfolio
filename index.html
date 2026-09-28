@@ -1475,6 +1475,22 @@
 
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script>
+// Global (not inside the app IIFE) so the inline onerror="" attribute on logo <img> tags can
+// reach it: walks through the remaining candidate logo URLs (domain, then ticker lookup) and
+// only swaps in the colored-letter avatar once every source has failed.
+window.__logoNextFallback = function(img){
+  var urls = [];
+  try { urls = JSON.parse(img.getAttribute("data-logo-urls") || "[]"); } catch(e) { urls = []; }
+  if(urls.length){
+    var next = urls.shift();
+    img.setAttribute("data-logo-urls", JSON.stringify(urls));
+    img.src = next;
+  } else {
+    var letter = img.getAttribute("data-logo-letter") || "?";
+    img.outerHTML = letter;
+  }
+};
+
 (function(){
   "use strict";
 
@@ -2720,17 +2736,23 @@
     var hue = Math.abs(hash) % 360;
     return 'hsl('+hue+',48%,40%)';
   }
+  var LOGO_DEV_TOKEN = "pk_FxRjgbYmTu2wzAlIjPbsNg";
+  // Tries a chain of logo URLs (domain, then ticker lookup) via the global __logoNextFallback
+  // handler below, and only falls back to the colored-letter avatar once every source 404s.
+  // fallback=404 is required so onerror actually fires instead of silently getting a generic
+  // placeholder image with a 200 status (the problem with Google's/other favicon services).
   function logoInnerHtml(ticker, fallbackName){
     var domain = domainForTicker(ticker);
     var entry = STOCK_DB.find(function(s){ return s.t === ticker; });
     var nameForInitial = (entry && entry.n) || fallbackName || ticker || "?";
     var letter = String(nameForInitial).trim().charAt(0).toUpperCase() || "?";
-    if(!domain) return letter;
-    // Clearbit's Logo API returns a real 404 when it has no logo for a domain, unlike Google's
-    // favicon service which silently returns a generic placeholder icon with a 200 status
-    // (so onerror never fires there). Falling back to Clearbit lets the letter-avatar fallback
-    // below actually trigger when a company has no real logo available.
-    return '<img src="https://logo.clearbit.com/'+domain+'?size=128" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.onerror=null;this.outerHTML=\''+letter+'\';">';
+    var urls = [];
+    if(domain) urls.push("https://img.logo.dev/"+encodeURIComponent(domain)+"?token="+LOGO_DEV_TOKEN+"&size=128&fallback=404");
+    if(ticker) urls.push("https://img.logo.dev/ticker/"+encodeURIComponent(ticker)+"?token="+LOGO_DEV_TOKEN+"&size=128&fallback=404");
+    if(urls.length===0) return letter;
+    var first = urls.shift();
+    var rest = urls.map(function(u){ return u.replace(/"/g,"&quot;"); });
+    return '<img src="'+first+'" alt="" data-logo-urls=\''+JSON.stringify(rest).replace(/'/g,"&#39;")+'\' data-logo-letter="'+letter+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="window.__logoNextFallback(this)">';
   }
   function logoSpanHtml(ticker, size, fallbackName){
     size = size || 32;
