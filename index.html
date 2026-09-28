@@ -464,8 +464,13 @@
   .advanced-toggle .chev{ margin-left:auto; color:var(--text-faint); transition:transform 0.15s ease; }
   .advanced-toggle .chev.open{ transform:rotate(180deg); }
   .field input:focus,.field select:focus{ outline:2px solid var(--blue); outline-offset:-1px; border-color:var(--blue); }
-  .field-row{ display:flex; gap:10px; }
-  .field-row .field{ flex:1; }
+  .field-row{ display:flex; gap:10px; align-items:flex-end; }
+  .field-row .field{ flex:1; min-width:0; }
+  .field-row .field label{ white-space:normal; line-height:1.3; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; min-height:calc(1.3em * 2); }
+  .field-row .field input{ width:100%; box-sizing:border-box; }
+  .field-row .field input[type=number]::-webkit-outer-spin-button,
+  .field-row .field input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  .field-row .field input[type=number]{ -moz-appearance:textfield; }
   .amount-row{ display:flex; gap:8px; }
   .amount-row input{ flex:1; min-width:0; }
   .currency-chip{ flex-shrink:0; background:var(--surface-2); border:1px solid var(--hairline); color:var(--text); font-family:var(--font-ui); font-size:0.85rem; font-weight:700; padding:0 13px; border-radius:12px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
@@ -2702,14 +2707,31 @@
     return String(s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; });
   }
   function domainForTicker(ticker){
-    var entry = STOCK_DB.find(function(s){ return s.t === ticker; });
+    var entry = STOCK_DB_BY_TICKER && STOCK_DB_BY_TICKER[ticker];
+    if(!entry) entry = STOCK_DB.find(function(s){ return s.t === ticker; });
     return entry && entry.d ? entry.d : null;
   }
-  function logoInnerHtml(ticker){
+  function tickerColor(ticker){
+    var str = String(ticker||"?");
+    var hash = 0;
+    for(var i=0;i<str.length;i++){ hash = str.charCodeAt(i) + ((hash<<5)-hash); hash |= 0; }
+    var hue = Math.abs(hash) % 360;
+    return 'hsl('+hue+',48%,40%)';
+  }
+  function logoInnerHtml(ticker, fallbackName){
     var domain = domainForTicker(ticker);
-    var letter = ticker ? ticker.charAt(0) : "?";
+    var entry = STOCK_DB.find(function(s){ return s.t === ticker; });
+    var nameForInitial = (entry && entry.n) || fallbackName || ticker || "?";
+    var letter = String(nameForInitial).trim().charAt(0).toUpperCase() || "?";
     if(!domain) return letter;
     return '<img src="https://www.google.com/s2/favicons?domain='+domain+'&sz=128" alt="" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" onerror="this.outerHTML=\''+letter+'\';">';
+  }
+  function logoSpanHtml(ticker, size, fallbackName){
+    size = size || 32;
+    var domain = domainForTicker(ticker);
+    var bg = domain ? "var(--surface-3)" : tickerColor(ticker);
+    var fontSize = Math.round(size*0.4);
+    return '<span style="width:'+size+'px; height:'+size+'px; border-radius:50%; background:'+bg+'; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:'+fontSize+'px; flex-shrink:0; overflow:hidden;">'+logoInnerHtml(ticker, fallbackName)+'</span>';
   }
 
   // ---------- Generic in-app picker (replaces native <select> dropdowns) ----------
@@ -3135,7 +3157,7 @@
     }
     filtered.slice().sort(function(a,b){ return b.addedAt - a.addedAt; }).forEach(function(w){
       var row = document.createElement("div"); row.className="row-card"; row.style.cursor="default";
-      row.innerHTML = '<div class="left" style="display:flex; align-items:center; gap:10px;"><span style="width:32px; height:32px; border-radius:50%; background:var(--surface-3); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem; flex-shrink:0; overflow:hidden;">'+logoInnerHtml(w.ticker)+'</span><div><div class="ticker-line"><span class="ticker">'+escapeHtml(w.ticker)+'</span><span class="name">'+escapeHtml(stockDisplayName(w.ticker, w.name)||"")+'</span></div><div class="meta">'+escapeHtml(w.sector||"")+'</div></div></div>' +
+      row.innerHTML = '<div class="left" style="display:flex; align-items:center; gap:10px;">'+logoSpanHtml(w.ticker, 32, w.name)+'<div><div class="ticker-line"><span class="ticker">'+escapeHtml(w.ticker)+'</span><span class="name">'+escapeHtml(stockDisplayName(w.ticker, w.name)||"")+'</span></div><div class="meta">'+escapeHtml(w.sector||"")+'</div></div></div>' +
         '<div class="right" style="display:flex; align-items:center; gap:10px;">' +
           '<span class="val num">'+(typeof w.price === "number" ? fmt(w.price) : "—")+'</span>' +
           '<button class="wl-add-btn" aria-label="Add as holding" title="Add as holding" style="background:none;border:none;color:var(--blue);font-size:1.2rem;cursor:pointer;">+</button>' +
@@ -3158,7 +3180,7 @@
     popularList.innerHTML = "";
     POPULAR_STOCKS.forEach(function(s){
       var row = document.createElement("div"); row.className="row-card"; row.style.cursor="default";
-      row.innerHTML = '<div class="left"><div class="ticker-line"><span class="ticker">'+s.t+'</span><span class="name">'+escapeHtml(stockDisplayName(s.t, s.n))+'</span></div></div><div class="right">'+starButtonHtml(s.t)+'</div>';
+      row.innerHTML = '<div class="left" style="display:flex; align-items:center; gap:10px;">'+logoSpanHtml(s.t, 32, s.n)+'<div class="ticker-line"><span class="ticker">'+s.t+'</span><span class="name">'+escapeHtml(stockDisplayName(s.t, s.n))+'</span></div></div><div class="right">'+starButtonHtml(s.t)+'</div>';
       wireStarButton(row, s);
       row.querySelector(".left").style.cursor = "pointer";
       row.querySelector(".left").addEventListener("click", function(){ openStockInfoModal(s); });
@@ -3176,7 +3198,7 @@
     } else {
       matches.forEach(function(s){
         var row = document.createElement("div"); row.className="row-card"; row.style.cursor="default";
-        row.innerHTML = '<div class="left"><div class="ticker-line"><span class="ticker">'+s.t+'</span><span class="name">'+escapeHtml(stockDisplayName(s.t, s.n))+'</span></div></div><div class="right">'+starButtonHtml(s.t)+'</div>';
+        row.innerHTML = '<div class="left" style="display:flex; align-items:center; gap:10px;">'+logoSpanHtml(s.t, 32, s.n)+'<div class="ticker-line"><span class="ticker">'+s.t+'</span><span class="name">'+escapeHtml(stockDisplayName(s.t, s.n))+'</span></div></div><div class="right">'+starButtonHtml(s.t)+'</div>';
         wireStarButton(row, s);
         row.querySelector(".left").style.cursor = "pointer";
         row.querySelector(".left").addEventListener("click", function(){ openStockInfoModal(s); });
@@ -3213,12 +3235,14 @@
     renderSearchDefault();
     refreshWatchlistPrices();
     window.scrollTo(0,0);
+    navBack.pushLayer();
   }
   function leaveSearchPage(){
     document.getElementById("searchFabBtn").classList.remove("active");
     document.querySelector("header.top").style.display = "flex";
     document.querySelector(".brand-header").style.display = "flex";
     document.getElementById("fabBtn").style.display = "flex";
+    navBack.closeLayer();
     goToPage(pageBeforeSearch);
   }
 
@@ -3985,6 +4009,55 @@
     syncBodyScrollLock();
   })();
 
+  // ---------- Back navigation (edge-swipe / device back closes a layer instead of exiting) ----------
+  var navBack = (function(){
+    var overlays = document.querySelectorAll(".overlay");
+    var overlayWasOpen = {};
+    overlays.forEach(function(o){ overlayWasOpen[o.id] = o.classList.contains("open"); });
+    var depth = 0;
+    var suppress = false;
+
+    function pushLayer(){
+      if(suppress) return;
+      depth++;
+      try{ history.pushState({ appNavDepth: depth }, ""); }catch(e){}
+    }
+    function closeLayer(){
+      if(suppress || depth<=0) return;
+      depth--;
+      try{ history.back(); }catch(e){}
+    }
+    function closeTopLayer(){
+      var openOverlay = null;
+      for(var i=0;i<overlays.length;i++){ if(overlays[i].classList.contains("open")) openOverlay = overlays[i]; }
+      if(openOverlay){
+        openOverlay.classList.remove("open");
+        return;
+      }
+      if(currentPage === "stockdetail"){ leaveStockDetail(); return; }
+      if(currentPage === "search"){ leaveSearchPage(); return; }
+    }
+    window.addEventListener("popstate", function(){
+      if(depth > 0){
+        depth--;
+        suppress = true;
+        closeTopLayer();
+        suppress = false;
+      }
+    });
+    overlays.forEach(function(o){
+      var mo = new MutationObserver(function(){
+        var isOpen = o.classList.contains("open");
+        var was = overlayWasOpen[o.id];
+        if(isOpen && !was){ pushLayer(); }
+        else if(!isOpen && was){ closeLayer(); }
+        overlayWasOpen[o.id] = isOpen;
+      });
+      mo.observe(o, {attributes:true, attributeFilter:["class"]});
+    });
+    return { pushLayer: pushLayer, closeLayer: closeLayer };
+  })();
+
   document.getElementById("nwHideBtn").addEventListener("click", function(){
     uiState.hideAmounts = !uiState.hideAmounts;
     document.getElementById("nwHideBtnLabel").textContent = uiState.hideAmounts ? "Show" : "Hide";
@@ -4122,7 +4195,7 @@
       var curr = currencyForTicker(h.ticker);
       var value=h.shares*h.currentPrice, cost=h.shares*h.avgCost, gain=value-cost, gainPct=cost>0?(gain/cost)*100:0;
       var row=document.createElement("div"); row.className="row-card";
-      row.innerHTML = '<div class="left" style="display:flex; align-items:center; gap:10px;"><span style="width:32px; height:32px; border-radius:50%; background:var(--surface-3); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.85rem; flex-shrink:0; overflow:hidden;">'+logoInnerHtml(h.ticker)+'</span><div><div class="ticker-line"><span class="ticker">'+escapeHtml(h.ticker)+'</span><span class="name">'+escapeHtml(stockDisplayName(h.ticker, h.name)||"")+'</span></div><div class="meta">'+h.shares+' '+t("unit_sh")+' · '+t("unit_avg")+' '+fmtIn(h.avgCost, curr)+'</div></div></div>' +
+      row.innerHTML = '<div class="left" style="display:flex; align-items:center; gap:10px;">'+logoSpanHtml(h.ticker, 32, h.name)+'<div><div class="ticker-line"><span class="ticker">'+escapeHtml(h.ticker)+'</span><span class="name">'+escapeHtml(stockDisplayName(h.ticker, h.name)||"")+'</span></div><div class="meta">'+h.shares+' '+t("unit_sh")+' · '+t("unit_avg")+' '+fmtIn(h.avgCost, curr)+'</div></div></div>' +
         '<div class="right"><div class="val num">'+fmtIn(value, curr)+'</div><div class="gain num" style="color:'+(gain>=0?"var(--green)":"var(--red)")+'">'+fmtPct(gainPct)+'</div></div>';
       row.addEventListener("click", function(){ openStockDetail(h.id); });
       list.appendChild(row);
@@ -4181,7 +4254,7 @@
     quickAddResults.innerHTML = "";
     matches.forEach(function(m){
       var row=document.createElement("div"); row.className="row-card";
-      row.innerHTML='<div class="left"><div class="ticker-line"><span class="ticker">'+m.t+'</span><span class="name">'+escapeHtml(m.n)+'</span></div></div><div class="right"><span class="ticker-tag">'+sectorLabel(m.s)+'</span></div>';
+      row.innerHTML='<div class="left" style="display:flex; align-items:center; gap:10px;">'+logoSpanHtml(m.t, 32, m.n)+'<div class="ticker-line"><span class="ticker">'+m.t+'</span><span class="name">'+escapeHtml(m.n)+'</span></div></div><div class="right"><span class="ticker-tag">'+sectorLabel(m.s)+'</span></div>';
       row.addEventListener("click", function(){
         quickAddInput.value=""; quickAddResults.style.display="none"; quickAddResults.innerHTML="";
         openHoldingModal(null, m);
@@ -4281,7 +4354,7 @@
               var hv = h.shares*h.currentPrice;
               var hpct = e.value>0 ? (hv/e.value)*100 : 0;
               return '<div class="alloc-sub-row" data-hid="'+h.id+'" style="display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; background:var(--surface-2); border-radius:10px; cursor:pointer;">' +
-                '<span style="display:flex; align-items:center; gap:8px; min-width:0;"><span style="width:24px; height:24px; border-radius:50%; background:var(--surface-3); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:800; flex-shrink:0; overflow:hidden;">'+logoInnerHtml(h.ticker)+'</span><span style="font-weight:700; font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">'+escapeHtml(h.ticker)+'</span></span>' +
+                '<span style="display:flex; align-items:center; gap:8px; min-width:0;">'+logoSpanHtml(h.ticker, 24, h.name)+'<span style="font-weight:700; font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">'+escapeHtml(h.ticker)+'</span></span>' +
                 '<span style="font-size:0.78rem; color:var(--text-muted); flex-shrink:0;" class="num">'+fmt(hv)+' · '+hpct.toFixed(0)+'%</span></div>';
             }).join("") +
           '</div>';
@@ -4356,7 +4429,7 @@
     filtered.slice().sort(function(a,b){ return new Date(b.date)-new Date(a.date); }).forEach(function(r){
       var dateStr = new Date(r.date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
       var row = document.createElement("div"); row.className = "row-card"; row.style.cursor = "default";
-      row.innerHTML = '<div class="left"><div class="ticker-line"><span class="ticker">'+escapeHtml(r.ticker)+'</span><span class="name">'+escapeHtml(r.name||"")+'</span></div><div class="meta">'+dateStr+' · '+r.units+' '+t("unit_sh")+' @ '+fmt(r.sellPrice)+'</div></div>' +
+      row.innerHTML = '<div class="left" style="display:flex; align-items:center; gap:10px;">'+logoSpanHtml(r.ticker, 32, r.name)+'<div><div class="ticker-line"><span class="ticker">'+escapeHtml(r.ticker)+'</span><span class="name">'+escapeHtml(r.name||"")+'</span></div><div class="meta">'+dateStr+' · '+r.units+' '+t("unit_sh")+' @ '+fmt(r.sellPrice)+'</div></div></div>' +
         '<div class="right"><div class="val num" style="color:'+(r.gain>=0?"var(--green)":"var(--red)")+'">'+(r.gain>=0?"+":"")+fmt(r.gain)+'</div></div>';
       list.appendChild(row);
     });
@@ -4544,7 +4617,7 @@
       var dCurr = h ? currencyForTicker(h.ticker) : state.currency;
       var row=document.createElement("div"); row.className="div-row";
       var dateStr=new Date(d.date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
-      row.innerHTML='<div class="left"><span class="ticker">'+(h?escapeHtml(h.ticker):"—")+'</span><span class="date">'+dateStr+'</span></div>' +
+      row.innerHTML='<div class="left" style="flex-direction:row; align-items:center; gap:10px;">'+(h?logoSpanHtml(h.ticker, 28, h.name):"")+'<span style="display:flex; flex-direction:column; gap:2px;"><span class="ticker">'+(h?escapeHtml(h.ticker):"—")+'</span><span class="date">'+dateStr+'</span></span></div>' +
         '<div class="right"><span class="status-pill '+d.status+'">'+t(d.status==="paid"?"status_paid":"status_announced")+'</span><span class="amt num">'+fmtIn(Number(d.amount), dCurr)+'</span></div>';
       list.appendChild(row);
     });
@@ -5242,11 +5315,13 @@
     window.scrollTo(0,0);
     renderStockDetail();
     fetchLiveStockDetail();
+    navBack.pushLayer();
   }
   function leaveStockDetail(){
     document.querySelector("header.top").style.display = "flex";
     document.querySelector(".brand-header").style.display = "flex";
     document.getElementById("fabBtn").style.display = "flex";
+    navBack.closeLayer();
     goToPage(pageBeforeDetail);
   }
   document.getElementById("detailBackBtn").addEventListener("click", leaveStockDetail);
