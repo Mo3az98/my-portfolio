@@ -301,6 +301,10 @@
   .tabs{ display:flex; gap:3px; background:var(--surface-2); border-radius:999px; padding:4px; margin-bottom:16px; }
   .tabs button{ flex:1; background:none; border:none; color:var(--text-muted); font-family:var(--font-ui); font-size:0.83rem; font-weight:600; padding:9px 4px; border-radius:999px; cursor:pointer; }
   .tabs button.active{ background:var(--text); color:var(--bg); }
+  #analyticsTabs.subtab-row{ display:flex; gap:18px; overflow-x:auto; scrollbar-width:none; min-width:0; -webkit-overflow-scrolling:touch; margin-bottom:16px; border-bottom:1px solid var(--hairline); padding-bottom:12px; background:none; border-radius:0; }
+  #analyticsTabs.subtab-row::-webkit-scrollbar{ display:none; }
+  #analyticsTabs.subtab-row .atab-btn{ flex:none; background:none; border:none; color:var(--text-faint); font-family:var(--font-ui); font-size:1.05rem; font-weight:800; letter-spacing:-0.01em; padding:0; cursor:pointer; white-space:nowrap; border-radius:0; }
+  #analyticsTabs.subtab-row .atab-btn.active{ background:none; color:var(--text); }
 
   section.panel{ display:none; }
   section.panel.active{ display:block; }
@@ -709,7 +713,7 @@
       <button type="button" id="renamePortfolioBtn" style="background:none; border:none; color:var(--blue); font-size:0.82rem; font-family:var(--font-ui); cursor:pointer; padding:0;" data-i18n="rename_portfolio">✎ Rename portfolio</button>
     </div>
 
-    <div class="tabs" id="analyticsTabs">
+    <div class="subtab-row" id="analyticsTabs">
       <button class="atab-btn active" data-atab="holdings" data-i18n="tab_holdings">Holdings</button>
       <button class="atab-btn" data-atab="allocation" data-i18n="tab_allocation">Allocation</button>
       <button class="atab-btn" data-atab="dividends" data-i18n="dividends">Dividends</button>
@@ -2061,10 +2065,7 @@
       STOCK_DB.forEach(function(s){ STOCK_DB_BY_TICKER[s.t] = s; });
     }
     var entry = STOCK_DB_BY_TICKER[ticker];
-    if(entry){
-      if(uiState.language === "ar" && entry.nAr) return entry.nAr;
-      return entry.n;
-    }
+    if(entry) return entry.n;
     return fallbackName;
   }
 
@@ -2580,10 +2581,10 @@
     {t:"GHM",n:"Graham Corporation",s:"Industrials"},{t:"ODD",n:"ODDITY Tech Ltd.",s:"Consumer Discretionary"},{t:"ASA",n:"ASA  Gold and Precious Metals Limited",s:"Industrials"},{t:"CRAI",n:"CRA International Inc.",s:"Consumer Discretionary"},{t:"JANX",n:"Janux Therapeutics Inc.",s:"Health Care"},{t:"ANL",n:"Adlai Nortye Group Ltd.",s:"Health Care"},
     {t:"PCRX",n:"Pacira BioSciences Inc.",s:"Health Care"},{t:"BTZ",n:"BlackRock Credit Allocation Income Trust",s:"Financials"},{t:"DSL",n:"DoubleLine Income Solutions Fund Common Shares of Beneficial Interests",s:"Financials"},{t:"UPWK",n:"Upwork Inc.",s:"Information Technology"},{t:"HQH",n:"abrdn Healthcare Investors",s:"Financials"},{t:"CCNE",n:"CNB Financial Corporation",s:"Financials"},
     {t:"DFH",n:"Dream Finders Homes Inc.",s:"Consumer Discretionary"},{t:"ASM",n:"Avino Silver & Gold Mines Ltd. Common Shares (Canada)",s:"Materials"},{t:"IQ",n:"iQIYI Inc.",s:"Consumer Discretionary"},{t:"PRCT",n:"PROCEPT BioRobotics Corporation",s:"Health Care"},{t:"FSCO",n:"FS Credit Opportunities Corp.",s:"Financials"},{t:"MCBS",n:"MetroCity Bankshares Inc.",s:"Financials"},
-    {t:"1010.SR",n:"Riyad Bank",s:"Financials",nAr:"بنك الرياض"},{t:"1020.SR",n:"Bank Al Jazira",s:"Financials",nAr:"بنك الجزيرة"},{t:"1030.SR",n:"The Saudi Investment Bank",s:"Financials",nAr:"البنك السعودي للإستثمار"},{t:"1080.SR",n:"Arab National Bank",s:"Financials",nAr:"البنك العربي الوطني"},{t:"1140.SR",n:"Bank Albilad",s:"Financials",nAr:"بنك البلاد"},{t:"1150.SR",n:"Alinma Bank",s:"Financials",nAr:"مصرف الإنماء"},
-    {t:"2082.SR",n:"ACWA Power",s:"Utilities",nAr:"أكوا باور"},{t:"7030.SR",n:"Zain KSA",s:"Communication Services",nAr:"زين السعودية"},{t:"5110.SR",n:"Saudi Electricity Company",s:"Utilities",nAr:"الكهرباء السعودية"},{t:"4072.SR",n:"MBC Group",s:"Communication Services",nAr:"مجموعة إم بي سي"},{t:"1111.SR",n:"Saudi Tadawul Group",s:"Financials",nAr:"مجموعة تداول السعودية"},{t:"4164.SR",n:"Nahdi Medical Company",s:"Consumer Staples",nAr:"النهدي الطبية"},
-    {t:"4004.SR",n:"Dallah Healthcare",s:"Health Care",nAr:"دله الصحية"},{t:"4005.SR",n:"رعاية",s:"Health Care",nAr:"رعاية"},{t:"4009.SR",n:"Al Mouwasat Medical Services",s:"Health Care",nAr:"المواساة"},{t:"4300.SR",n:"Dar Al Arkan Real Estate",s:"Real Estate",nAr:"دار الأركان"},{t:"4250.SR",n:"Jabal Omar Development",s:"Real Estate",nAr:"جبل عمر"},{t:"8010.SR",n:"The Company for Cooperative Insurance (Tawuniya)",s:"Financials",nAr:"التعاونية للتأمين"},
-    {t:"8020.SR",n:"MedGulf Insurance",s:"Financials",nAr:"ميدغلف للتأمين"},{t:"8030.SR",n:"ملاذ للتأمين",s:"Financials",nAr:"ملاذ للتأمين"},{t:"8190.SR",n:"Amana Cooperative Insurance",s:"Financials",nAr:"أمانة للتأمين"},{t:"2180.SR",n:"فيبكو",s:"Industrials",nAr:"فيبكو"},{t:"4040.SR",n:"Saudi Airlines Catering",s:"Industrials",nAr:"التموين (سال السعودية حالياً / الخطوط السعودية للتموين)"},{t:"4260.SR",n:"Knowledge Economic City",s:"Real Estate",nAr:"مدينة المعرفة"},
+    {t:"1010.SR",n:"Riyad Bank",s:"Financials",nAr:"بنك الرياض"},{t:"1020.SR",n:"Bank Al Jazira",s:"Financials",nAr:"بنك الجزيرة"},{t:"1030.SR",n:"The Saudi Investment Bank",s:"Financials",nAr:"البنك السعودي للإستثمار"},{t:"1080.SR",n:"Arab National Bank",s:"Financials",nAr:"البنك العربي الوطني"},{t:"1140.SR",n:"Bank Albilad",s:"Financials",nAr:"بنك البلاد"},{t:"1150.SR",n:"Alinma Bank",s:"Financials",d:"alinma.com",nAr:"مصرف الإنماء"},
+    {t:"2082.SR",n:"ACWA Power",s:"Utilities",nAr:"أكوا باور"},{t:"7030.SR",n:"Zain KSA",s:"Communication Services",nAr:"زين السعودية"},{t:"5110.SR",n:"Saudi Electricity Company",s:"Utilities",nAr:"الكهرباء السعودية"},{t:"4072.SR",n:"MBC Group",s:"Communication Services",nAr:"مجموعة إم بي سي"},{t:"1111.SR",n:"Saudi Tadawul Group",s:"Financials",nAr:"مجموعة تداول السعودية"},{t:"4164.SR",n:"Nahdi Medical Company",s:"Consumer Staples",d:"nahdi.sa",nAr:"النهدي الطبية"},
+    {t:"4004.SR",n:"Dallah Healthcare",s:"Health Care",nAr:"دله الصحية"},{t:"4005.SR",n:"رعاية",s:"Health Care",nAr:"رعاية"},{t:"4009.SR",n:"Al Mouwasat Medical Services",s:"Health Care",nAr:"المواساة"},{t:"4300.SR",n:"Dar Al Arkan Real Estate",s:"Real Estate",nAr:"دار الأركان"},{t:"4250.SR",n:"Jabal Omar Development",s:"Real Estate",nAr:"جبل عمر"},{t:"8010.SR",n:"The Company for Cooperative Insurance (Tawuniya)",s:"Financials",d:"tawuniya.com",nAr:"التعاونية للتأمين"},
+    {t:"8020.SR",n:"MedGulf Insurance",s:"Financials",nAr:"ميدغلف للتأمين"},{t:"8030.SR",n:"ملاذ للتأمين",s:"Financials",nAr:"ملاذ للتأمين"},{t:"8190.SR",n:"Amana Cooperative Insurance",s:"Financials",nAr:"أمانة للتأمين"},{t:"2180.SR",n:"فيبكو",s:"Industrials",nAr:"فيبكو"},{t:"4040.SR",n:"Saudi Airlines Catering",s:"Industrials",nAr:"التموين (سال السعودية حالياً / الخطوط السعودية للتموين)"},{t:"4260.SR",n:"Budget Saudi",s:"Industrials",nAr:"بدجت السعودية"},
     {t:"3010.SR",n:"Najran Cement",s:"Materials",nAr:"إسمنت حائل"},{t:"3020.SR",n:"Yamama Cement",s:"Materials",nAr:"إسمنت اليمامة"},{t:"3030.SR",n:"Saudi Cement Company",s:"Materials",nAr:"إسمنت السعودية"},{t:"3040.SR",n:"Qassim Cement",s:"Materials",nAr:"إسمنت القصيم"},{t:"3060.SR",n:"Yanbu Cement",s:"Materials",nAr:"إسمنت ينبع"},{t:"3080.SR",n:"Eastern Province Cement",s:"Materials",nAr:"إسمنت الشرقية"},
     {t:"3090.SR",n:"Tabuk Cement",s:"Materials",nAr:"إسمنت تبوك"},{t:"2190.SR",n:"National Agricultural Development Company (NADEC)",s:"Consumer Staples",nAr:"الشركة الوطنية للتنمية الزراعية (نادك)"},{t:"2270.SR",n:"SADAFCO",s:"Consumer Staples",nAr:"سدافكو"},{t:"4061.SR",n:"أنعام القابضة",s:"Consumer Staples",nAr:"أنعام القابضة"},{t:"4160.SR",n:"Thimar Development Holding",s:"Consumer Staples",nAr:"ثمار"},{t:"4050.SR",n:"SASCO",s:"Consumer Staples",nAr:"ساسكو"},
     {t:"4170.SR",n:"شمس",s:"Consumer Discretionary",nAr:"شمس"},{t:"4100.SR",n:"مكة للإنشاء",s:"Real Estate",nAr:"مكة للإنشاء"},{t:"4220.SR",n:"إعمار المدينة الاقتصادية",s:"Real Estate",nAr:"إعمار المدينة الاقتصادية"},{t:"4230.SR",n:"Red Sea International",s:"Real Estate",nAr:"البحر الأحمر"},{t:"4290.SR",n:"الخليج للتدريب",s:"Industrials",nAr:"الخليج للتدريب"},{t:"6010.SR",n:"NADEC",s:"Consumer Staples",nAr:"نادك"},
@@ -2591,11 +2592,11 @@
     {t:"2040.SR",n:"Saudi Ceramic Company",s:"Industrials",nAr:"الخزف السعودي"},{t:"2060.SR",n:"التصنيع",s:"Materials",nAr:"التصنيع"},{t:"2090.SR",n:"National Gypsum Company",s:"Materials",nAr:"الجبس"},{t:"2110.SR",n:"اللجين",s:"Materials",nAr:"اللجين"},{t:"2120.SR",n:"المتقدمة",s:"Materials",nAr:"المتقدمة"},{t:"2130.SR",n:"صدق",s:"Consumer Discretionary",nAr:"صدق"},
     {t:"2140.SR",n:"الاحساء (أيان)",s:"Health Care",nAr:"الاحساء (أيان)"},{t:"2150.SR",n:"زجاج",s:"Materials",nAr:"زجاج"},{t:"2170.SR",n:"اليسر (وفرة)",s:"Consumer Staples",nAr:"اليسر (وفرة)"},{t:"2200.SR",n:"المجموعة السعودية",s:"Materials",nAr:"المجموعة السعودية"},{t:"2210.SR",n:"نماء للكيماويات",s:"Materials",nAr:"نماء للكيماويات"},{t:"2230.SR",n:"Saudi Chemical Company",s:"Health Care",nAr:"الشركة الكيميائية السعودية"},
     {t:"2240.SR",n:"Zamil Industrial Investment",s:"Industrials",nAr:"الزامل للصناعة"},{t:"2250.SR",n:"المجموعة الصناعية (سبكيم)",s:"Materials",nAr:"المجموعة الصناعية (سبكيم)"},{t:"2290.SR",n:"Yanbu National Petrochemical (Yansab)",s:"Materials",nAr:"ينساب"},{t:"2300.SR",n:"Saudi Paper Manufacturing",s:"Materials",nAr:"صناعة الورق"},{t:"2310.SR",n:"Sipchem (Saudi International Petrochemical)",s:"Materials",nAr:"سبكيم العالمية"},{t:"2360.SR",n:"الفخارية",s:"Industrials",nAr:"الفخارية"},
-    {t:"2380.SR",n:"Petro Rabigh",s:"Energy",nAr:"بترورابغ"},{t:"4002.SR",n:"المواساة للخدمات الطبية",s:"Health Care",nAr:"المواساة للخدمات الطبية"},{t:"4003.SR",n:"أسترا الصناعية",s:"Industrials",nAr:"أسترا الصناعية"},{t:"4007.SR",n:"Al Hammadi Holding",s:"Health Care",nAr:"الحمادي"},{t:"4011.SR",n:"لازردي",s:"Consumer Discretionary",nAr:"لازردي"},{t:"4020.SR",n:"العقارية",s:"Real Estate",nAr:"العقارية"},
+    {t:"2380.SR",n:"Petro Rabigh",s:"Energy",nAr:"بترورابغ"},{t:"4002.SR",n:"المواساة للخدمات الطبية",s:"Health Care",nAr:"المواساة للخدمات الطبية"},{t:"4003.SR",n:"United Electronics (eXtra)",s:"Consumer Discretionary",d:"extra.com",nAr:"المتحدة للإلكترونيات (إكسترا)"},{t:"4007.SR",n:"Al Hammadi Holding",s:"Health Care",nAr:"الحمادي"},{t:"4011.SR",n:"لازردي",s:"Consumer Discretionary",nAr:"لازردي"},{t:"4020.SR",n:"العقارية",s:"Real Estate",nAr:"العقارية"},
     {t:"4031.SR",n:"مجموعة سيسكو",s:"Industrials",nAr:"مجموعة سيسكو"},{t:"4080.SR",n:"سنومي ريتيل",s:"Consumer Staples",nAr:"سنومي ريتيل"},{t:"4110.SR",n:"Batic Investments and Logistics",s:"Industrials",nAr:"باتك"},{t:"4130.SR",n:"Al Baha Investment and Development",s:"Financials",nAr:"الباحة"},{t:"4140.SR",n:"ثمار السعودية",s:"Consumer Staples",nAr:"ثمار السعودية"},{t:"4150.SR",n:"المجموعة التعدينية (أنابيب الشرق)",s:"Materials",nAr:"المجموعة التعدينية (أنابيب الشرق)"},
     {t:"4180.SR",n:"Fitaihi Holding Group",s:"Consumer Discretionary",nAr:"مجموعة فتيحي"},{t:"4210.SR",n:"الأبحاث والإعلام",s:"Communication Services",nAr:"الأبحاث والإعلام"},{t:"4240.SR",n:"فواز الحكير (سنومي ريتيل)",s:"Consumer Staples",nAr:"فواز الحكير (سنومي ريتيل)"},{t:"4310.SR",n:"معرفة (مدينة المعرفة)",s:"Real Estate",nAr:"معرفة (مدينة المعرفة)"},{t:"4321.SR",n:"المراكز (سنومي سنترز)",s:"Real Estate",nAr:"المراكز (سنومي سنترز)"},{t:"6001.SR",n:"Halwani Bros",s:"Consumer Staples",nAr:"حلواني إخوان"},
     {t:"6002.SR",n:"وفرة",s:"Consumer Staples",nAr:"وفرة"},{t:"6020.SR",n:"Al Qassim Agricultural",s:"Consumer Staples",nAr:"القصيم القابضة"},{t:"6040.SR",n:"Tabuk Agricultural Development",s:"Consumer Staples",nAr:"تبوك الزراعية"},{t:"6050.SR",n:"National Fisheries Company",s:"Consumer Staples",nAr:"الأسماك"},{t:"6060.SR",n:"Sharqiyah Development",s:"Consumer Staples",nAr:"الشرقية للتنمية"},{t:"6070.SR",n:"Al-Jouf Agricultural Development",s:"Consumer Staples",nAr:"الجوف الزراعية"},
-    {t:"6090.SR",n:"جازادكو",s:"Consumer Staples",nAr:"جازادكو"},{t:"7200.SR",n:"المعمر لأنظمة المعلومات",s:"Information Technology",nAr:"المعمر لأنظمة المعلومات"},{t:"7201.SR",n:"بحر العرب",s:"Information Technology",nAr:"بحر العرب"},{t:"7202.SR",n:"تلوينات (توبيان)",s:"Information Technology",nAr:"تلوينات (توبيان)"},{t:"7203.SR",n:"علم",s:"Information Technology",nAr:"علم"},{t:"7204.SR",n:"Solutions by stc",s:"Information Technology",nAr:"تلوينات السحاب (سلوشنز)"},
+    {t:"6090.SR",n:"جازادكو",s:"Consumer Staples",nAr:"جازادكو"},{t:"7200.SR",n:"المعمر لأنظمة المعلومات",s:"Information Technology",nAr:"المعمر لأنظمة المعلومات"},{t:"7201.SR",n:"بحر العرب",s:"Information Technology",nAr:"بحر العرب"},{t:"7202.SR",n:"Solutions by stc",s:"Information Technology",d:"solutions.com.sa",nAr:"سلوشنز (الشركة العربية لخدمات الإنترنت والاتصالات)"},{t:"7203.SR",n:"Elm",s:"Information Technology",d:"elm.sa",nAr:"علم"},{t:"7204.SR",n:"Tobi",s:"Information Technology",nAr:"توبي (العرض المتقن للخدمات التجارية)"},
     {t:"8012.SR",n:"الجزيرة تكافل",s:"Financials",nAr:"الجزيرة تكافل"},{t:"8040.SR",n:"Allianz Saudi Fransi Cooperative Insurance",s:"Financials",nAr:"أليانز إس إف"},{t:"8050.SR",n:"Salama Cooperative Insurance",s:"Financials",nAr:"سلامة للتأمين"},{t:"8060.SR",n:"Walaa Cooperative Insurance",s:"Financials",nAr:"ولاء للتأمين"},{t:"8070.SR",n:"الدرع العربي",s:"Financials",nAr:"الدرع العربي"},{t:"8100.SR",n:"SAICO (Saudi Arabian Cooperative Insurance)",s:"Financials",nAr:"سايكو للتأمين"},
     {t:"8120.SR",n:"اتحاد الخليج الأهلية",s:"Financials",nAr:"اتحاد الخليج الأهلية"},{t:"8150.SR",n:"Ace Arabia (ASIG) Cooperative Insurance",s:"Financials",nAr:"أسيج للتأمين"},{t:"8160.SR",n:"التأمين العربية",s:"Financials",nAr:"التأمين العربية"},{t:"8170.SR",n:"Al-Etihad Cooperative Insurance",s:"Financials",nAr:"الاتحاد للتأمين"},{t:"8180.SR",n:"Al Sagr Cooperative Insurance",s:"Financials",nAr:"الصقر للتأمين"},{t:"8200.SR",n:"Saudi Reinsurance Company",s:"Financials",nAr:"الإعادة السعودية"},
     {t:"8210.SR",n:"Bupa Arabia",s:"Financials",nAr:"بوبا العربية"},{t:"8230.SR",n:"Al Rajhi Takaful",s:"Financials",nAr:"تكافل الراجحي"},{t:"8240.SR",n:"تشب للتأمين",s:"Financials",nAr:"تشب للتأمين"},{t:"8250.SR",n:"أكسا التعاونية (جي جي إي جي)",s:"Financials",nAr:"أكسا التعاونية (جي جي إي جي)"},{t:"8260.SR",n:"Gulf Union Al Ahlia Cooperative Insurance",s:"Financials",nAr:"الخليجية العامة"},{t:"8270.SR",n:"بروج للتأمين",s:"Financials",nAr:"بروج للتأمين"},
@@ -3876,12 +3877,13 @@
     }
 
     var investSummary = document.getElementById("nwInvestSummary");
-    if(state.holdings.length===0){
+    var activeHoldingsList = activeHoldings();
+    if(activeHoldingsList.length===0){
       investSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">◎</div><div class="nc-title">'+t("empty_not_connected_title")+'</div><div class="nc-sub">'+t("empty_invest_not_connected_sub")+'</div></div>';
       investSummary.onclick = null;
       investSummary.style.cursor = "default";
     } else {
-      investSummary.innerHTML = '<div class="list-card"><div class="row-card" style="cursor:pointer;"><div class="left"><div class="ticker-line"><span class="ticker">'+state.holdings.length+' '+plural(state.holdings.length,"position_one","position_other")+'</span></div><div class="meta">'+t("across_sectors")+' '+ (new Set(state.holdings.map(function(h){return h.sector;})).size) +' '+t("sectors_word")+'</div></div><div class="right"><div class="val num">'+(uiState.hideAmounts?redactBar("sm"):fmt(iv))+'</div></div></div></div>';
+      investSummary.innerHTML = '<div class="list-card"><div class="row-card" style="cursor:pointer;"><div class="left"><div class="ticker-line"><span class="ticker">'+activeHoldingsList.length+' '+plural(activeHoldingsList.length,"position_one","position_other")+'</span></div><div class="meta">'+t("across_sectors")+' '+ (new Set(activeHoldingsList.map(function(h){return h.sector;})).size) +' '+t("sectors_word")+'</div></div><div class="right"><div class="val num">'+(uiState.hideAmounts?redactBar("sm"):fmt(iv))+'</div></div></div></div>';
       investSummary.style.cursor = "pointer";
       investSummary.onclick = function(){ goToPage("analytics"); };
     }
@@ -4007,9 +4009,10 @@
   function answerInsight(key){
     var iv = investTotal(), nw = netWorth();
     if(key === "mover"){
-      if(state.holdings.length===0) return t("insight_no_holdings");
+      var moverHoldings = activeHoldings();
+      if(moverHoldings.length===0) return t("insight_no_holdings");
       var best = null, bestPct = -Infinity;
-      state.holdings.forEach(function(h){
+      moverHoldings.forEach(function(h){
         var cost = h.shares*h.avgCost;
         var pct = cost>0 ? ((h.shares*h.currentPrice - cost)/cost)*100 : 0;
         if(pct > bestPct){ bestPct = pct; best = h; }
@@ -4017,9 +4020,10 @@
       return tf("insight_mover_tpl", { ticker: best.ticker, pct: fmtPct(bestPct) });
     }
     if(key === "diversified"){
-      if(state.holdings.length===0) return t("insight_no_holdings_div");
+      var divHoldings = activeHoldings();
+      if(divHoldings.length===0) return t("insight_no_holdings_div");
       var bySector = {};
-      state.holdings.forEach(function(h){ bySector[h.sector] = (bySector[h.sector]||0) + h.shares*h.currentPrice; });
+      divHoldings.forEach(function(h){ bySector[h.sector] = (bySector[h.sector]||0) + h.shares*h.currentPrice; });
       var sectors = Object.keys(bySector);
       var maxShare = Math.max.apply(null, sectors.map(function(s){ return bySector[s]/iv; })) * 100;
       var topSector = sectors.reduce(function(a,b){ return bySector[a]>bySector[b]?a:b; });
@@ -4096,14 +4100,17 @@
     document.getElementById("portfolioRenameRow").style.display = (selectedPortfolioId !== "all") ? "block" : "none";
   }
 
+  function activeHoldings(){
+    return state.holdings.filter(function(h){ return h.shares > 1e-9; });
+  }
   function renderHoldings(){
     renderPortfolioChips();
     var list = document.getElementById("holdingsList");
     var count = document.getElementById("holdingsCount");
     list.innerHTML = "";
     var filtered = selectedPortfolioId === "all"
-      ? state.holdings
-      : state.holdings.filter(function(h){ return h.portfolioId === selectedPortfolioId; });
+      ? activeHoldings()
+      : activeHoldings().filter(function(h){ return h.portfolioId === selectedPortfolioId; });
     count.textContent = filtered.length ? filtered.length+" "+plural(filtered.length,"position_one","position_other") : "";
     if(filtered.length===0){
       list.innerHTML = '<div class="empty-state"><div class="glyph">◎</div><p>'+t("empty_no_holdings_title")+'</p><p>'+t("empty_no_holdings_sub")+'</p></div>';
@@ -4188,11 +4195,12 @@
     var invest = investTotal(), cash = cashTotal(), liab = liabTotal();
     var assets = invest + cash;
     var nw = assets - liab;
-    if(state.holdings.length === 0 && cash <= 0){
+    var activeH = activeHoldings();
+    if(activeH.length === 0 && cash <= 0){
       return { score:0, hasData:false, note:t("health_no_data") };
     }
     var bySector = {};
-    state.holdings.forEach(function(h){
+    activeH.forEach(function(h){
       var v = convertAmount(h.shares*h.currentPrice, currencyForTicker(h.ticker), state.currency);
       bySector[h.sector] = (bySector[h.sector]||0) + v;
     });
@@ -4202,7 +4210,7 @@
     var divScore, concScore, holdScore, cashScore, debtScore;
     if(sectors.length >= 5) divScore = 20; else if(sectors.length >= 3) divScore = 14; else if(sectors.length >= 2) divScore = 8; else if(sectors.length === 1) divScore = 3; else divScore = 0;
     if(maxShare <= 0.25) concScore = 20; else if(maxShare <= 0.4) concScore = 14; else if(maxShare <= 0.6) concScore = 8; else concScore = 2;
-    var hc = state.holdings.length;
+    var hc = activeH.length;
     if(hc >= 8) holdScore = 15; else if(hc >= 5) holdScore = 11; else if(hc >= 3) holdScore = 7; else if(hc >= 1) holdScore = 3; else holdScore = 0;
     var cashRatio = nw > 0 ? cash/nw : (cash > 0 ? 1 : 0);
     if(cashRatio >= 0.1 && cashRatio <= 0.4) cashScore = 20; else if(cashRatio >= 0.05 && cashRatio < 0.6) cashScore = 12; else cashScore = 5;
@@ -4245,8 +4253,8 @@
     var totalEl = document.getElementById("allocTotal");
     list.innerHTML="";
     var filtered = selectedPortfolioId === "all"
-      ? state.holdings
-      : state.holdings.filter(function(h){ return h.portfolioId === selectedPortfolioId; });
+      ? activeHoldings()
+      : activeHoldings().filter(function(h){ return h.portfolioId === selectedPortfolioId; });
     var totalValue = filtered.reduce(function(s,h){ return s + h.shares*h.currentPrice; }, 0);
     totalEl.textContent = filtered.length ? fmt(totalValue) : "";
     if(filtered.length===0){
@@ -5028,7 +5036,7 @@
       });
       var h = state.holdings.find(function(x){ return x.ticker === ticker; });
       var dbEntry = STOCK_DB.find(function(s){ return s.t === ticker; });
-      var displayName = dbEntry ? (uiState.language==="ar" && dbEntry.nAr ? dbEntry.nAr : dbEntry.n) : (group[0].name || ticker);
+      var displayName = dbEntry ? dbEntry.n : (group[0].name || ticker);
       if(!h){
         h = { id: uid(), ticker: ticker, name: displayName, sector: dbEntry ? dbEntry.s : "Information Technology", portfolioId: defaultPortfolioId, note: "", currentPrice: group[group.length-1].price, transactions: [] };
         state.holdings.push(h);
