@@ -1616,6 +1616,8 @@
       import_trades_bad_format:"Couldn't recognize the columns in that file. Expected columns like Date, Time, Type, Name, Symbol, Price, Quantity.",
       import_trades_failed:"Couldn't read that file. Make sure it's a valid Excel (.xlsx) or CSV file.",
       import_trades_done_tpl:"Imported {txns} transaction(s) across {created} new and {updated} existing holding(s). Skipped {skipped} row(s).",
+      import_trades_dividends_tpl:"Also logged {count} dividend payment(s).",
+      import_trades_manual_tpl:"{count} row(s) had no usable price (e.g. a market order with no fill price recorded) and need to be added manually.",
       by_sector:"By sector", log_dividend:"+ Log a dividend",
       portfolio_health:"Portfolio health",
       health_no_data:"Add holdings and cash to see your health score.",
@@ -1843,6 +1845,8 @@
       import_trades_bad_format:"ما قدرنا نتعرّف على أعمدة الملف. المتوقع أعمدة زي التاريخ، الوقت، العملية، اسم السهم، الرمز، السعر، الكمية.",
       import_trades_failed:"ما قدرنا نقرأ هذا الملف. تأكد إنه ملف إكسل (.xlsx) أو CSV صحيح.",
       import_trades_done_tpl:"تم استيراد {txns} صفقة عبر {created} سهم جديد و{updated} سهم موجود. تم تجاهل {skipped} صف.",
+      import_trades_dividends_tpl:"كذلك تم تسجيل {count} توزيع أرباح.",
+      import_trades_manual_tpl:"{count} صف ما فيه سعر يُستخدم (مثل أمر تنفذ \"بسعر السوق\" بدون سعر مسجّل) — تحتاج تضيفه يدويًا.",
       by_sector:"حسب القطاع", log_dividend:"+ تسجيل ربح موزّع",
       portfolio_health:"صحة المحفظة",
       health_no_data:"أضف أسهماً ونقداً عشان تشوف درجة صحة محفظتك.",
@@ -4928,15 +4932,17 @@
     name: ["اسم السهم","name","stock name","security"],
     code: ["الرمز","code","symbol","ticker"],
     price: ["السعر","price"],
-    qty: ["الكمية","quantity","units","qty"]
+    qty: ["الكمية","quantity","units","qty"],
+    amount: ["المبلغ","amount","net amount","value"]
   };
   function detectImportColumns(headerRow){
     var map = {};
     (headerRow||[]).forEach(function(cell, idx){
       var v = String(cell||"").trim().toLowerCase();
+      if(!v) return;
       Object.keys(IMPORT_HEADER_MAP).forEach(function(key){
         if(map[key]!==undefined) return;
-        if(IMPORT_HEADER_MAP[key].some(function(alias){ return v === alias.toLowerCase(); })) map[key] = idx;
+        if(IMPORT_HEADER_MAP[key].some(function(alias){ return v.indexOf(alias.toLowerCase())!==-1; })) map[key] = idx;
       });
     });
     return map;
@@ -4954,6 +4960,7 @@
   }
   function parseImportType(raw){
     var s = String(raw||"").trim().toLowerCase();
+    if(s.indexOf("أرباح")>=0 || s.indexOf("توزيع")>=0 || s.indexOf("dividend")>=0) return "dividend";
     if(s.indexOf("منحة")>=0 || s.indexOf("bonus")>=0 || s.indexOf("grant")>=0) return "bonus";
     if(s.indexOf("شراء")>=0 || s.indexOf("buy")>=0) return "buy";
     if(s.indexOf("بيع")>=0 || s.indexOf("sell")>=0) return "sell";
@@ -4969,27 +4976,45 @@
   function importTradesFromRows(rows){
     if(!rows || rows.length < 2){ showNotice(t("import_trades_no_rows")); return; }
     var cols = detectImportColumns(rows[0]);
-    if(cols.code===undefined || cols.price===undefined || cols.qty===undefined || cols.type===undefined || cols.date===undefined){
+    if(cols.code===undefined || cols.qty===undefined || cols.type===undefined || cols.date===undefined){
       showNotice(t("import_trades_bad_format"));
       return;
     }
-    var parsed = [], skipped = 0;
+    var parsed = [], dividendRows = [], skipped = 0, needsManual = [];
     for(var i=1;i<rows.length;i++){
       var row = rows[i];
       if(!row || row.every(function(c){ return c==="" || c===undefined || c===null; })) continue;
       var dateVal = parseImportDate(row[cols.date]);
       var typeVal = parseImportType(row[cols.type]);
-      var qtyVal = parseFloat(row[cols.qty]);
-      var priceVal = parseFloat(row[cols.price]);
-      if(typeVal === "bonus" && isNaN(priceVal)) priceVal = 0;
       var codeVal = row[cols.code];
       var nameVal = cols.name!==undefined ? row[cols.name] : "";
       var timeVal = cols.time!==undefined ? String(row[cols.time]||"") : "";
       var ticker = normalizeImportTicker(codeVal);
-      if(!dateVal || !typeVal || !ticker || isNaN(qtyVal) || qtyVal<=0 || isNaN(priceVal) || priceVal<0){ skipped++; continue; }
+      var amountVal = cols.amount!==undefined ? parseFloat(row[cols.amount]) : NaN;
+
+      if(typeVal === "dividend"){
+        if(!dateVal || !ticker || isNaN(amountVal)){ skipped++; continue; }
+        dividendRows.push({ ticker:ticker, name:String(nameVal||"").trim(), date:dateVal, amount:amountVal });
+        continue;
+      }
+
+      var qtyVal = cols.qty!==undefined ? parseFloat(row[cols.qty]) : NaN;
+      var priceVal = cols.price!==undefined ? parseFloat(row[cols.price]) : NaN;
+      if(typeVal === "bonus" && isNaN(priceVal)) priceVal = 0;
+      // Some broker exports record a market order without a price (e.g. "at market") — derive it from the
+      // recorded net amount when available instead of dropping the row.
+      if(isNaN(priceVal) && !isNaN(amountVal) && qtyVal>0) priceVal = Math.abs(amountVal)/qtyVal;
+
+      if(!dateVal || !typeVal || !ticker || isNaN(qtyVal) || qtyVal<=0 || isNaN(priceVal) || priceVal<0){
+        if(dateVal && ticker && typeVal && !isNaN(qtyVal) && qtyVal>0){
+          needsManual.push({ ticker:ticker, type:typeVal, date:dateVal, units:qtyVal });
+        }
+        skipped++;
+        continue;
+      }
       parsed.push({ ticker:ticker, name:String(nameVal||"").trim(), type:typeVal, date:dateVal, time:timeVal, units:qtyVal, price:priceVal });
     }
-    if(parsed.length===0){ showNotice(t("import_trades_no_rows")); return; }
+    if(parsed.length===0 && dividendRows.length===0){ showNotice(t("import_trades_no_rows")); return; }
 
     var byTicker = {};
     parsed.forEach(function(p){ (byTicker[p.ticker] = byTicker[p.ticker]||[]).push(p); });
@@ -5018,9 +5043,21 @@
       h.currentPrice = group[group.length-1].price;
     });
 
+    // Dividends: matched to holdings that now exist (created above or already tracked).
+    var divCount = 0, divUnmatched = 0;
+    dividendRows.forEach(function(d){
+      var h = state.holdings.find(function(x){ return x.ticker === d.ticker; });
+      if(!h){ divUnmatched++; return; }
+      state.dividends.push({ id:uid(), holdingId:h.id, date:d.date, amount:d.amount, status:"paid" });
+      divCount++;
+    });
+
     save();
     renderAll();
-    showNotice(tf("import_trades_done_tpl", { txns: txnCount, created: createdCount, updated: updatedCount, skipped: skipped }));
+    var msg = tf("import_trades_done_tpl", { txns: txnCount, created: createdCount, updated: updatedCount, skipped: skipped });
+    if(divCount > 0) msg += " " + tf("import_trades_dividends_tpl", { count: divCount });
+    if(needsManual.length > 0) msg += " " + tf("import_trades_manual_tpl", { count: needsManual.length });
+    showNotice(msg);
   }
   document.getElementById("importHoldingsBtn").addEventListener("click", function(){
     document.getElementById("holdingsImportFile").click();
