@@ -3157,7 +3157,7 @@
     }
     filtered.slice().sort(function(a,b){ return b.addedAt - a.addedAt; }).forEach(function(w){
       var row = document.createElement("div"); row.className="row-card"; row.style.cursor="default";
-      row.innerHTML = '<div class="left" style="display:flex; align-items:center; gap:10px;">'+logoSpanHtml(w.ticker, 32, w.name)+'<div><div class="ticker-line"><span class="ticker">'+escapeHtml(w.ticker)+'</span><span class="name">'+escapeHtml(stockDisplayName(w.ticker, w.name)||"")+'</span></div><div class="meta">'+escapeHtml(w.sector||"")+'</div></div></div>' +
+      row.innerHTML = '<div class="left" style="display:flex; flex-direction:row; align-items:center; gap:10px;">'+logoSpanHtml(w.ticker, 32, w.name)+'<div><div class="ticker-line"><span class="ticker">'+escapeHtml(w.ticker)+'</span><span class="name">'+escapeHtml(stockDisplayName(w.ticker, w.name)||"")+'</span></div><div class="meta">'+escapeHtml(w.sector||"")+'</div></div></div>' +
         '<div class="right" style="display:flex; align-items:center; gap:10px;">' +
           '<span class="val num">'+(typeof w.price === "number" ? fmt(w.price) : "—")+'</span>' +
           '<button class="wl-add-btn" aria-label="Add as holding" title="Add as holding" style="background:none;border:none;color:var(--blue);font-size:1.2rem;cursor:pointer;">+</button>' +
@@ -3180,7 +3180,7 @@
     popularList.innerHTML = "";
     POPULAR_STOCKS.forEach(function(s){
       var row = document.createElement("div"); row.className="row-card"; row.style.cursor="default";
-      row.innerHTML = '<div class="left" style="display:flex; align-items:center; gap:10px;">'+logoSpanHtml(s.t, 32, s.n)+'<div class="ticker-line"><span class="ticker">'+s.t+'</span><span class="name">'+escapeHtml(stockDisplayName(s.t, s.n))+'</span></div></div><div class="right">'+starButtonHtml(s.t)+'</div>';
+      row.innerHTML = '<div class="left" style="display:flex; flex-direction:row; align-items:center; gap:10px;">'+logoSpanHtml(s.t, 32, s.n)+'<div class="ticker-line"><span class="ticker">'+s.t+'</span><span class="name">'+escapeHtml(stockDisplayName(s.t, s.n))+'</span></div></div><div class="right">'+starButtonHtml(s.t)+'</div>';
       wireStarButton(row, s);
       row.querySelector(".left").style.cursor = "pointer";
       row.querySelector(".left").addEventListener("click", function(){ openStockInfoModal(s); });
@@ -3198,7 +3198,7 @@
     } else {
       matches.forEach(function(s){
         var row = document.createElement("div"); row.className="row-card"; row.style.cursor="default";
-        row.innerHTML = '<div class="left" style="display:flex; align-items:center; gap:10px;">'+logoSpanHtml(s.t, 32, s.n)+'<div class="ticker-line"><span class="ticker">'+s.t+'</span><span class="name">'+escapeHtml(stockDisplayName(s.t, s.n))+'</span></div></div><div class="right">'+starButtonHtml(s.t)+'</div>';
+        row.innerHTML = '<div class="left" style="display:flex; flex-direction:row; align-items:center; gap:10px;">'+logoSpanHtml(s.t, 32, s.n)+'<div class="ticker-line"><span class="ticker">'+s.t+'</span><span class="name">'+escapeHtml(stockDisplayName(s.t, s.n))+'</span></div></div><div class="right">'+starButtonHtml(s.t)+'</div>';
         wireStarButton(row, s);
         row.querySelector(".left").style.cursor = "pointer";
         row.querySelector(".left").addEventListener("click", function(){ openStockInfoModal(s); });
@@ -4195,7 +4195,7 @@
       var curr = currencyForTicker(h.ticker);
       var value=h.shares*h.currentPrice, cost=h.shares*h.avgCost, gain=value-cost, gainPct=cost>0?(gain/cost)*100:0;
       var row=document.createElement("div"); row.className="row-card";
-      row.innerHTML = '<div class="left" style="display:flex; align-items:center; gap:10px;">'+logoSpanHtml(h.ticker, 32, h.name)+'<div><div class="ticker-line"><span class="ticker">'+escapeHtml(h.ticker)+'</span><span class="name">'+escapeHtml(stockDisplayName(h.ticker, h.name)||"")+'</span></div><div class="meta">'+h.shares+' '+t("unit_sh")+' · '+t("unit_avg")+' '+fmtIn(h.avgCost, curr)+'</div></div></div>' +
+      row.innerHTML = '<div class="left" style="display:flex; flex-direction:row; align-items:center; gap:10px;">'+logoSpanHtml(h.ticker, 32, h.name)+'<div><div class="ticker-line"><span class="ticker">'+escapeHtml(h.ticker)+'</span><span class="name">'+escapeHtml(stockDisplayName(h.ticker, h.name)||"")+'</span></div><div class="meta">'+h.shares+' '+t("unit_sh")+' · '+t("unit_avg")+' '+fmtIn(h.avgCost, curr)+'</div></div></div>' +
         '<div class="right"><div class="val num">'+fmtIn(value, curr)+'</div><div class="gain num" style="color:'+(gain>=0?"var(--green)":"var(--red)")+'">'+fmtPct(gainPct)+'</div></div>';
       row.addEventListener("click", function(){ openStockDetail(h.id); });
       list.appendChild(row);
@@ -4254,7 +4254,7 @@
     quickAddResults.innerHTML = "";
     matches.forEach(function(m){
       var row=document.createElement("div"); row.className="row-card";
-      row.innerHTML='<div class="left" style="display:flex; align-items:center; gap:10px;">'+logoSpanHtml(m.t, 32, m.n)+'<div class="ticker-line"><span class="ticker">'+m.t+'</span><span class="name">'+escapeHtml(m.n)+'</span></div></div><div class="right"><span class="ticker-tag">'+sectorLabel(m.s)+'</span></div>';
+      row.innerHTML='<div class="left" style="display:flex; flex-direction:row; align-items:center; gap:10px;">'+logoSpanHtml(m.t, 32, m.n)+'<div class="ticker-line"><span class="ticker">'+m.t+'</span><span class="name">'+escapeHtml(m.n)+'</span></div></div><div class="right"><span class="ticker-tag">'+sectorLabel(m.s)+'</span></div>';
       row.addEventListener("click", function(){
         quickAddInput.value=""; quickAddResults.style.display="none"; quickAddResults.innerHTML="";
         openHoldingModal(null, m);
@@ -4429,7 +4429,7 @@
     filtered.slice().sort(function(a,b){ return new Date(b.date)-new Date(a.date); }).forEach(function(r){
       var dateStr = new Date(r.date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
       var row = document.createElement("div"); row.className = "row-card"; row.style.cursor = "default";
-      row.innerHTML = '<div class="left" style="display:flex; align-items:center; gap:10px;">'+logoSpanHtml(r.ticker, 32, r.name)+'<div><div class="ticker-line"><span class="ticker">'+escapeHtml(r.ticker)+'</span><span class="name">'+escapeHtml(r.name||"")+'</span></div><div class="meta">'+dateStr+' · '+r.units+' '+t("unit_sh")+' @ '+fmt(r.sellPrice)+'</div></div></div>' +
+      row.innerHTML = '<div class="left" style="display:flex; flex-direction:row; align-items:center; gap:10px;">'+logoSpanHtml(r.ticker, 32, r.name)+'<div><div class="ticker-line"><span class="ticker">'+escapeHtml(r.ticker)+'</span><span class="name">'+escapeHtml(r.name||"")+'</span></div><div class="meta">'+dateStr+' · '+r.units+' '+t("unit_sh")+' @ '+fmt(r.sellPrice)+'</div></div></div>' +
         '<div class="right"><div class="val num" style="color:'+(r.gain>=0?"var(--green)":"var(--red)")+'">'+(r.gain>=0?"+":"")+fmt(r.gain)+'</div></div>';
       list.appendChild(row);
     });
