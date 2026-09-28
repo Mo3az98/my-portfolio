@@ -581,6 +581,8 @@
         <button class="nwsub-btn active" data-sub="overview" data-i18n="sub_overview">Overview</button>
         <button class="nwsub-btn" data-sub="investments" data-i18n="sub_investments">Investments</button>
         <button class="nwsub-btn" data-sub="cash" data-i18n="sub_cash">Cash</button>
+        <button class="nwsub-btn" data-sub="realestate" data-i18n="sub_realestate">Real estate</button>
+        <button class="nwsub-btn" data-sub="deposits" data-i18n="sub_deposits">Deposits</button>
         <button class="nwsub-btn" data-sub="liabilities" data-i18n="sub_liabilities">Liabilities</button>
       </div>
     </div>
@@ -700,8 +702,18 @@
       </div>
 
       <div id="nwBlockCash">
-        <div class="section-heading"><h2 data-i18n="cash_balance">Cash balance</h2></div>
+        <div class="section-heading plus"><h2 data-i18n="cash_balance">Cash balance</h2><button class="plus-btn" id="nwPlusCash" aria-label="Add cash account">+</button></div>
         <div class="list-card" id="nwCashList"></div>
+      </div>
+
+      <div id="nwBlockRE">
+        <div class="section-heading plus"><h2 data-i18n="real_estate_funds">Real estate funds</h2><button class="plus-btn" id="nwPlusRE" aria-label="Add real estate fund">+</button></div>
+        <div id="nwRESummary"></div>
+      </div>
+
+      <div id="nwBlockDeposits">
+        <div class="section-heading plus"><h2 data-i18n="deposits">Deposits</h2><button class="plus-btn" id="nwPlusDeposit" aria-label="Add deposit">+</button></div>
+        <div id="nwDepositsSummary"></div>
       </div>
 
       <div id="nwBlockLiab">
@@ -855,12 +867,16 @@
 
     <div class="wealth-card">
       <div class="wealth-card-head"><h2><span data-i18n="emergency_fund">Emergency fund</span> <span class="tag">WEALTH</span></h2></div>
-      <p class="wealth-desc" data-i18n="emergency_fund_desc">How many months of expenses your cash on hand would cover.</p>
-      <div class="field"><label for="efExpenses" data-i18n="monthly_expenses">Monthly expenses</label>
-        <div class="amount-row"><input id="efExpenses" type="number" step="any" inputmode="decimal" placeholder="0.00" /><button type="button" class="currency-chip" id="efCurrencyTrigger">USD ▾</button></div>
+      <p class="wealth-desc" data-i18n="emergency_fund_desc">A manual target amount, tracked against an account of your choice — separate from your market investments.</p>
+      <div class="field"><label for="efTarget" data-i18n="ef_target_amount">Target amount</label>
+        <div class="amount-row"><input id="efTarget" type="number" step="any" inputmode="decimal" placeholder="0.00" /><button type="button" class="currency-chip" id="efCurrencyTrigger">USD ▾</button></div>
       </div>
-      <div class="plan-stat-row"><span data-i18n="cash_on_hand">Cash on hand</span><span class="num" id="efCash">$0.00</span></div>
-      <div class="plan-stat-row"><span data-i18n="months_covered">Months covered</span><span class="num" id="efMonths">—</span></div>
+      <div class="field"><label for="efAccount" data-i18n="ef_linked_account">Linked account</label>
+        <select id="efAccount" style="display:none;"></select>
+        <button type="button" class="select-trigger" id="efAccountTrigger"><span class="tlabel"></span><span class="chev">▾</span></button>
+      </div>
+      <div class="plan-stat-row"><span data-i18n="ef_current_balance">Current balance</span><span class="num" id="efCurrent">$0.00</span></div>
+      <div class="plan-stat-row"><span data-i18n="ef_progress">Progress</span><span class="num" id="efPct">—</span></div>
       <p class="wealth-desc" id="efNote" style="margin-top:6px;"></p>
     </div>
     </div>
@@ -1130,6 +1146,8 @@
   <div class="modal">
     <h3><span id="cashModalTitle" data-i18n="add_cash_account">Add cash account</span><button id="closeCashModal" aria-label="Close">×</button></h3>
 
+    <div class="field"><label for="cAccountName" data-i18n="account_name">Account name</label><input id="cAccountName" placeholder="e.g. Bank account, Wallet" /></div>
+
     <div id="cashTxnHistory" style="display:none;">
       <div class="section-heading" style="margin:0 0 8px;"><h2 style="font-size:0.95rem;" data-i18n="transactions">Transactions</h2><span class="totals" id="cashBalancePreviewTop"></span></div>
       <div class="list-card" id="cashTxnList" style="margin-bottom:18px;"></div>
@@ -1143,7 +1161,7 @@
       <div class="field"><label for="cTxnDate" data-i18n="date">Date</label><input id="cTxnDate" type="date" /></div>
     </div>
     <div class="field"><label for="cAmount" data-i18n="amount">Amount</label>
-      <div class="amount-row"><input id="cAmount" type="number" step="any" inputmode="decimal" placeholder="400.00" /><span class="currency-chip" id="cCurrencyLabel" style="cursor:default;">USD</span></div>
+      <div class="amount-row"><input id="cAmount" type="number" step="any" inputmode="decimal" placeholder="400.00" /><button type="button" class="currency-chip" id="cCurrencyTrigger">USD ▾</button></div>
     </div>
 
     <div class="modal-actions" style="margin-bottom:10px;">
@@ -1151,6 +1169,7 @@
       <span id="cashBalancePreview" class="num" style="flex:1; text-align:right; font-weight:800; font-size:1.1rem;">$0.00</span>
     </div>
     <div class="modal-actions">
+      <button class="btn danger" id="deleteCashBtn" style="display:none;" data-i18n="delete_account">Delete account</button>
       <button class="btn primary" id="saveCashBtn" data-i18n="add_transaction">Add transaction</button>
     </div>
   </div>
@@ -1210,6 +1229,99 @@
     <div class="modal-actions">
       <button class="btn danger" id="deleteLiabBtn" style="display:none;" data-i18n="delete_account">Delete account</button>
       <button class="btn primary" id="saveLiabBtn" data-i18n="add_transaction">Add a transaction</button>
+    </div>
+  </div>
+</div>
+
+<!-- Real estate fund modal -->
+<div class="overlay" id="reOverlay">
+  <div class="modal">
+    <h3><span id="reModalTitle" data-i18n="add_re_fund">Add real estate fund</span><button id="closeReModal" aria-label="Close">×</button></h3>
+
+    <div class="field"><label for="reName" data-i18n="account_name">Account name</label><input id="reName" placeholder="e.g. Stake Income Fund" /></div>
+
+    <div class="field"><label for="reFundType" data-i18n="fund_type">Fund type</label>
+      <select id="reFundType" style="display:none;">
+        <option value="income" data-i18n="fund_type_income">Income-generating</option>
+        <option value="development" data-i18n="fund_type_development">Development</option>
+        <option value="fixlease" data-i18n="fund_type_fixlease">Fix &amp; Lease</option>
+      </select>
+      <button type="button" class="select-trigger" id="reFundTypeTrigger"><span class="tlabel"></span><span class="chev">▾</span></button>
+    </div>
+
+    <div class="field"><label for="rePricePerUnit" data-i18n="price_per_unit">Current price per unit</label>
+      <div class="amount-row"><input id="rePricePerUnit" type="number" step="any" inputmode="decimal" placeholder="500.00" /><button type="button" class="currency-chip" id="reCurrencyTrigger">USD ▾</button></div>
+    </div>
+
+    <div id="reTxnHistory" style="display:none;">
+      <div class="section-heading" style="margin:0 0 8px;"><h2 style="font-size:0.95rem;" data-i18n="transactions">Transactions</h2><span class="totals" id="reValuePreviewTop"></span></div>
+      <div class="list-card" id="reTxnList" style="margin-bottom:18px;"></div>
+    </div>
+
+    <div class="field-row">
+      <div class="field"><label for="reTxnType" data-i18n="transaction_type">Transaction type</label>
+        <select id="reTxnType" style="display:none;">
+          <option value="buy" data-i18n="re_buy">Buy units</option>
+          <option value="sell" data-i18n="re_sell">Sell units</option>
+          <option value="rental" data-i18n="re_rental">Rental distribution</option>
+        </select>
+        <button type="button" class="select-trigger" id="reTxnTypeTrigger"><span class="tlabel"></span><span class="chev">▾</span></button>
+      </div>
+      <div class="field"><label for="reDate" data-i18n="date">Date</label><input id="reDate" type="date" /></div>
+    </div>
+    <div class="field-row">
+      <div class="field" id="reUnitsField"><label for="reUnits" data-i18n="units">Units</label><input id="reUnits" type="number" step="any" inputmode="decimal" placeholder="10" /></div>
+      <div class="field"><label for="reAmount" data-i18n="amount">Amount</label><input id="reAmount" type="number" step="any" inputmode="decimal" placeholder="5000.00" /></div>
+    </div>
+
+    <div class="modal-actions" style="margin-bottom:10px;">
+      <span data-i18n="current_value">Current value</span>
+      <span id="reValuePreview" class="num" style="flex:1; text-align:right; font-weight:800; font-size:1.1rem;">$0.00</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn danger" id="deleteReBtn" style="display:none;" data-i18n="delete_account">Delete account</button>
+      <button class="btn primary" id="saveReBtn" data-i18n="save">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Deposit modal -->
+<div class="overlay" id="depositOverlay">
+  <div class="modal">
+    <h3><span id="depositModalTitle" data-i18n="add_deposit">Add deposit</span><button id="closeDepositModal" aria-label="Close">×</button></h3>
+
+    <div class="field"><label for="depName" data-i18n="account_name">Account name</label><input id="depName" placeholder="e.g. Al Rajhi term deposit" /></div>
+
+    <div class="field"><label for="depPrincipal" data-i18n="deposit_principal">Deposit amount</label>
+      <div class="amount-row"><input id="depPrincipal" type="number" step="any" inputmode="decimal" placeholder="10000.00" /><button type="button" class="currency-chip" id="depCurrencyTrigger">USD ▾</button></div>
+    </div>
+
+    <div class="field"><label for="depStartDate" data-i18n="deposit_start_date">Start date</label><input id="depStartDate" type="date" /></div>
+
+    <div class="field-row">
+      <div class="field"><label for="depTermValue" data-i18n="deposit_term">Term length</label><input id="depTermValue" type="number" step="1" min="1" inputmode="numeric" placeholder="12" /></div>
+      <div class="field"><label for="depTermUnit" data-i18n="deposit_term_unit">Term unit</label>
+        <select id="depTermUnit" style="display:none;">
+          <option value="day" data-i18n="unit_days">Days</option>
+          <option value="month" data-i18n="unit_months">Months</option>
+          <option value="year" data-i18n="unit_years">Years</option>
+        </select>
+        <button type="button" class="select-trigger" id="depTermUnitTrigger"><span class="tlabel"></span><span class="chev">▾</span></button>
+      </div>
+    </div>
+
+    <div class="field"><label for="depRate" data-i18n="deposit_rate">Annual return rate (%)</label><input id="depRate" type="number" step="any" inputmode="decimal" placeholder="4.5" /></div>
+
+    <div id="depositSummaryBox" style="display:none;">
+      <div class="modal-actions"><span data-i18n="deposit_maturity_date">Maturity date</span><span id="depMaturityPreview" class="num" style="flex:1; text-align:right; font-weight:700;"></span></div>
+      <div class="modal-actions"><span data-i18n="deposit_expected_profit">Expected profit at maturity</span><span id="depExpectedPreview" class="num" style="flex:1; text-align:right; font-weight:700; color:var(--green);"></span></div>
+      <div class="modal-actions" style="margin-bottom:10px;"><span data-i18n="deposit_accrued_profit">Actual profit so far</span><span id="depAccruedPreview" class="num" style="flex:1; text-align:right; font-weight:800; font-size:1.1rem; color:var(--green);"></span></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn danger" id="closeDepositBtn" style="display:none;" data-i18n="deposit_terminate">Terminate deposit</button>
+      <button class="btn danger" id="deleteDepositBtn" style="display:none;" data-i18n="delete_account">Delete account</button>
+      <button class="btn primary" id="saveDepositBtn" data-i18n="save">Save</button>
     </div>
   </div>
 </div>
@@ -1607,6 +1719,21 @@ window.__logoNextFallback = function(img){
       annual_report_no_data:"No activity logged for this year yet.",
       net_worth_then:"Net worth then", net_worth_now:"Net worth now",
       interest_apy:"Interest rate (APY %)", edit_cash_account:"Edit cash account", currency:"Currency",
+      sub_realestate:"Real estate", sub_deposits:"Deposits", real_estate_funds:"Real estate funds", deposits:"Deposits",
+      add_re_fund:"Add real estate fund", edit_re_fund:"Edit real estate fund", fund_type:"Fund type",
+      fund_type_income:"Income-generating", fund_type_development:"Development", fund_type_fixlease:"Fix & Lease",
+      price_per_unit:"Current price per unit", units:"units", current_value:"Current value",
+      re_buy:"Buy units", re_sell:"Sell units", re_rental:"Rental distribution",
+      confirm_delete_re_fund:"Delete this real estate fund and all its transactions?",
+      save:"Save", add_deposit:"Add deposit", edit_deposit:"Edit deposit",
+      deposit_principal:"Deposit amount", deposit_start_date:"Start date", deposit_term:"Term length", deposit_term_unit:"Term unit",
+      unit_days:"Days", unit_months:"Months", unit_years:"Years",
+      deposit_rate:"Annual return rate (%)", deposit_maturity_date:"Maturity date",
+      deposit_expected_profit:"Expected profit at maturity", deposit_accrued_profit:"Actual profit so far",
+      deposit_terminate:"Terminate deposit", deposit_closed:"Closed",
+      confirm_terminate_deposit:"Terminate this deposit now and lock in its profit so far?",
+      confirm_delete_deposit:"Delete this deposit and its history?",
+      enter_deposit_fields:"Enter the deposit amount, start date and term.",
       usd_cash:"Dollar cash", sar_cash:"Riyal cash",
       projected_annual_interest:"Projected annual interest", yield_on_cost:"Yield on cost (12mo)",
       app_lock:"App lock (PIN)", app_lock_sub:"Ask for a PIN when opening this tracker",
@@ -1715,12 +1842,13 @@ window.__logoNextFallback = function(img){
       hist_no_data:"No historical data available for this stock yet.",
       hist_loading:"Loading historical prices…",
       hist_fetch_failed:"Couldn't load historical prices. Check your Google Sheet connection.",
-      emergency_fund:"Emergency fund", emergency_fund_desc:"How many months of expenses your cash on hand would cover.",
+      emergency_fund:"Emergency fund", emergency_fund_desc:"A manual target amount, tracked against an account of your choice — separate from your market investments.",
+      ef_target_amount:"Target amount", ef_linked_account:"Linked account", ef_current_balance:"Current balance", ef_progress:"Progress", ef_manual_no_account:"No account linked (manual)",
       monthly_expenses:"Monthly expenses", cash_on_hand:"Cash on hand", months_covered:"Months covered",
-      ef_note_low:"Aim for at least 3 months — consider adding to your cash reserves.",
-      ef_note_ok:"Solid — most guidance suggests 3–6 months of expenses.",
-      ef_note_high:"Well covered — you could consider investing more of your excess cash.",
-      ef_note_none:"Add your monthly expenses to see how many months your cash covers.",
+      ef_note_low:"You're building it up — keep contributing toward your target.",
+      ef_note_ok:"Getting close — you're over halfway to your target.",
+      ef_note_high:"Target reached — your emergency fund is fully funded.",
+      ef_note_none:"Set a target amount to track your progress.",
       tab_realized:"Realized", realized_desc:"Gains and losses locked in from sell transactions, based on average cost at the time of each sale.",
       empty_no_realized_title:"No realized gains yet.", empty_no_realized_sub:"Sell transactions will show up here with their gain or loss.",
       about:"About", about_tracker_title:"About this tracker", about_tracker_sub:"What it does and doesn't do",
@@ -1749,6 +1877,8 @@ window.__logoNextFallback = function(img){
       empty_invest_not_connected_sub:"Add holdings to see all your investments in one place",
       empty_cash_not_connected_sub:"Add a cash account to see all your balances in one place",
       empty_liab_not_connected_sub:"Add your liabilities to see your true net worth in one place",
+      empty_re_not_connected_sub:"Add a real estate fund to track its units, value and rental income",
+      empty_deposits_not_connected_sub:"Add a bank or app deposit to track its profit over time",
       empty_nothing_to_add_title:"Nothing to add to yet.", empty_nothing_to_add_sub:"Add a holding, cash account or liability first.",
       unit_sh:"sh", unit_avg:"avg", position_one:"position", position_other:"positions",
       transaction_one:"transaction", transaction_other:"transactions",
@@ -1777,6 +1907,7 @@ window.__logoNextFallback = function(img){
       confirm_delete_security:"Delete this security and all its transactions? Its logged dividends will stay in your history.",
       confirm_delete_dividend:"Delete this dividend entry?",
       confirm_delete_liability:"Delete this liability account and all its transactions?",
+      confirm_delete_cash_account:"Delete this cash account and all its transactions?",
       confirm_clear_all:"This clears everything on this device — holdings, cash, liabilities, dividends and goals. Continue?",
       enter_name_balance:"Enter an account name and balance.",
       enter_name_balance_owed:"Enter a name and balance owed.",
@@ -1837,6 +1968,21 @@ window.__logoNextFallback = function(img){
       annual_report_no_data:"ما فيه نشاط مسجّل لهذي السنة بعد.",
       net_worth_then:"صافي الثروة وقتها", net_worth_now:"صافي الثروة الآن",
       interest_apy:"معدل الفائدة (APY %)", edit_cash_account:"تعديل الحساب النقدي", currency:"العملة",
+      sub_realestate:"عقاري", sub_deposits:"ودائع", real_estate_funds:"صناديق عقارية", deposits:"الودائع",
+      add_re_fund:"إضافة صندوق عقاري", edit_re_fund:"تعديل الصندوق العقاري", fund_type:"نوع الصندوق",
+      fund_type_income:"مدر للدخل", fund_type_development:"تطويري", fund_type_fixlease:"تأجير بعد تطوير",
+      price_per_unit:"سعر الوحدة الحالي", units:"وحدة", current_value:"القيمة الحالية",
+      re_buy:"شراء وحدات", re_sell:"بيع وحدات", re_rental:"توزيع إيجار",
+      confirm_delete_re_fund:"حذف هذا الصندوق العقاري وكل معاملاته؟",
+      save:"حفظ", add_deposit:"إضافة وديعة", edit_deposit:"تعديل الوديعة",
+      deposit_principal:"مبلغ الوديعة", deposit_start_date:"تاريخ البدء", deposit_term:"مدة الوديعة", deposit_term_unit:"وحدة المدة",
+      unit_days:"أيام", unit_months:"أشهر", unit_years:"سنوات",
+      deposit_rate:"نسبة العائد السنوي (%)", deposit_maturity_date:"تاريخ الاستحقاق",
+      deposit_expected_profit:"الربح المتوقع عند الاستحقاق", deposit_accrued_profit:"الربح الفعلي حتى الآن",
+      deposit_terminate:"إنهاء الوديعة", deposit_closed:"منتهية",
+      confirm_terminate_deposit:"إنهاء هذه الوديعة الآن وتثبيت ربحها حتى الآن؟",
+      confirm_delete_deposit:"حذف هذه الوديعة وسجلها؟",
+      enter_deposit_fields:"أدخل مبلغ الوديعة وتاريخ البدء والمدة.",
       usd_cash:"النقد بالدولار", sar_cash:"نقد بالريال",
       projected_annual_interest:"الفائدة السنوية المتوقعة", yield_on_cost:"العائد على التكلفة (12 شهر)",
       app_lock:"قفل التطبيق (رمز)", app_lock_sub:"يطلب رمز دخول عند فتح التطبيق",
@@ -1945,12 +2091,13 @@ window.__logoNextFallback = function(img){
       hist_no_data:"ما فيه بيانات تاريخية متوفرة لهذا السهم بعد.",
       hist_loading:"جاري تحميل الأسعار التاريخية…",
       hist_fetch_failed:"ما قدرنا نحمّل الأسعار التاريخية. تأكد من ربط Google Sheet.",
-      emergency_fund:"صندوق الطوارئ", emergency_fund_desc:"كم شهر من مصاريفك يغطيه رصيدك النقدي الحالي.",
+      emergency_fund:"صندوق الطوارئ", emergency_fund_desc:"مبلغ مستهدف تحدده يدويًا، مرتبط بحساب تختاره — منفصل تمامًا عن استثماراتك في السوق.",
+      ef_target_amount:"المبلغ المستهدف", ef_linked_account:"الحساب المرتبط", ef_current_balance:"الرصيد الحالي", ef_progress:"نسبة الإنجاز", ef_manual_no_account:"بدون حساب مرتبط (يدوي)",
       monthly_expenses:"المصاريف الشهرية", cash_on_hand:"النقد المتوفر", months_covered:"الأشهر المغطاة",
-      ef_note_low:"يُفضّل تغطية 3 أشهر على الأقل — فكّر بزيادة احتياطيك النقدي.",
-      ef_note_ok:"وضع جيد — أغلب التوصيات تقترح تغطية 3 إلى 6 أشهر من المصاريف.",
-      ef_note_high:"مغطى بشكل ممتاز — ممكن تفكّر باستثمار جزء من النقد الفائض.",
-      ef_note_none:"أضف مصاريفك الشهرية عشان تشوف كم شهر يغطيه رصيدك النقدي.",
+      ef_note_low:"في طور البناء — استمر بالإضافة نحو هدفك.",
+      ef_note_ok:"اقتربت — تجاوزت نصف المبلغ المستهدف.",
+      ef_note_high:"تم الوصول للهدف — صندوق الطوارئ مكتمل التمويل.",
+      ef_note_none:"حدد مبلغاً مستهدفاً لمتابعة نسبة إنجازك.",
       tab_realized:"محقق", realized_desc:"الأرباح والخسائر المحققة من معاملات البيع، بناءً على متوسط التكلفة وقت كل عملية بيع.",
       empty_no_realized_title:"ما فيه أرباح محققة بعد.", empty_no_realized_sub:"معاملات البيع بتظهر هنا مع ربحها أو خسارتها.",
       about:"حول التطبيق", about_tracker_title:"عن هذا التطبيق", about_tracker_sub:"ما الذي يفعله وما لا يفعله",
@@ -1979,6 +2126,8 @@ window.__logoNextFallback = function(img){
       empty_invest_not_connected_sub:"أضف أسهماً لرؤية كل استثماراتك بمكان واحد",
       empty_cash_not_connected_sub:"أضف حساباً نقدياً لرؤية كل أرصدتك بمكان واحد",
       empty_liab_not_connected_sub:"أضف التزاماتك لرؤية صافي ثروتك الحقيقي",
+      empty_re_not_connected_sub:"أضف صندوقاً عقارياً لتتبع وحداته وقيمته وإيراد الإيجار منه",
+      empty_deposits_not_connected_sub:"أضف وديعة بنكية أو من تطبيق ودائع لتتبع أرباحها بمرور الوقت",
       empty_nothing_to_add_title:"لا يوجد شيء لتضيفه بعد.", empty_nothing_to_add_sub:"أضف سهماً أو حساباً نقدياً أو التزاماً أولاً.",
       unit_sh:"سهم", unit_avg:"متوسط", position_one:"مركز", position_other:"مراكز",
       transaction_one:"معاملة", transaction_other:"معاملات",
@@ -2007,6 +2156,7 @@ window.__logoNextFallback = function(img){
       confirm_delete_security:"حذف هذا السهم وكل معاملاته؟ الأرباح الموزعة المسجّلة له ستبقى بسجلك.",
       confirm_delete_dividend:"حذف سجل الربح الموزّع هذا؟",
       confirm_delete_liability:"حذف حساب الالتزام هذا وكل معاملاته؟",
+      confirm_delete_cash_account:"حذف هذا الحساب النقدي وكل معاملاته؟",
       confirm_clear_all:"هذا سيمسح كل شيء بهذا الجهاز — الأسهم، النقد، الالتزامات، الأرباح الموزعة، والأهداف. متابعة؟",
       enter_name_balance:"أدخل اسم الحساب والرصيد.",
       enter_name_balance_owed:"أدخل الاسم والرصيد المستحق.",
@@ -2627,8 +2777,9 @@ window.__logoNextFallback = function(img){
   ];
 
   var state = {
-    currency:"$", holdings:[], dividends:[], cash:[], liabilities:[],
-    contributions:[], monthlyGoal:0, goals:[], sheetWebAppUrl:"", watchlist:[], portfolios:[], watchlists:[], monthlyExpenses:0, realizedPnL:[]
+    currency:"$", holdings:[], dividends:[], cash:[], liabilities:[], realEstateFunds:[], deposits:[],
+    contributions:[], monthlyGoal:0, goals:[], sheetWebAppUrl:"", watchlist:[], portfolios:[], watchlists:[], monthlyExpenses:0, realizedPnL:[],
+    emergencyFund:{ targetAmount:0, accountType:"", accountId:"" }
   };
   var uiState = { hideAmounts:false, onboardDismissed:false, homeRange:"1M", theme:"dark", language:"en" };
 
@@ -2652,6 +2803,9 @@ window.__logoNextFallback = function(img){
           state.watchlists = Array.isArray(p.watchlists) ? p.watchlists : [];
           state.monthlyExpenses = typeof p.monthlyExpenses === "number" ? p.monthlyExpenses : 0;
           state.realizedPnL = Array.isArray(p.realizedPnL) ? p.realizedPnL : [];
+          state.realEstateFunds = Array.isArray(p.realEstateFunds) ? p.realEstateFunds : [];
+          state.deposits = Array.isArray(p.deposits) ? p.deposits : [];
+          state.emergencyFund = (p.emergencyFund && typeof p.emergencyFund === "object") ? p.emergencyFund : { targetAmount:0, accountType:"", accountId:"" };
         }
       }
       var ui = localStorage.getItem(STORE_KEY+"-ui");
@@ -2682,29 +2836,17 @@ window.__logoNextFallback = function(img){
     document.documentElement.setAttribute("data-theme", uiState.theme);
     applyLanguage();
   }
+  // Cash accounts are a free-form list the user manages themselves (add/rename/delete) —
+  // this only fills in missing fields on load; it never merges accounts together and never
+  // auto-creates a default account.
   function consolidateCashAccounts(){
-    var usd = state.cash.find(function(c){ return (c.currency||"$") === "$"; });
-    var sar = state.cash.find(function(c){ return c.currency === "SAR "; });
-    var extras = state.cash.filter(function(c){ return c !== usd && c !== sar; });
-    extras.forEach(function(c){
-      var target = (c.currency === "SAR ") ? sar : usd;
-      if(target){
-        target.balance += convertAmount(c.balance, c.currency||"$", target.currency||"$");
-        if(c.transactions && c.transactions.length){
-          if(!target.transactions) target.transactions = [];
-          target.transactions = target.transactions.concat(c.transactions);
-        }
-      }
+    state.cash.forEach(function(c){
+      if(!c.id) c.id = uid();
+      if(!c.currency) c.currency = "$";
+      if(typeof c.balance !== "number" || isNaN(c.balance)) c.balance = 0;
+      if(!c.transactions) c.transactions = [];
+      if(!c.name) c.name = (c.currency === "SAR ") ? t("sar_cash") : t("usd_cash");
     });
-    if(!usd){
-      usd = { id: uid(), name: t("usd_cash"), balance: 0, currency: "$", transactions:[] };
-    }
-    if(!sar){
-      sar = { id: uid(), name: t("sar_cash"), balance: 0, currency: "SAR ", transactions:[] };
-    }
-    usd.name = t("usd_cash"); usd.currency = "$";
-    sar.name = t("sar_cash"); sar.currency = "SAR ";
-    state.cash = [usd, sar];
   }
   function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){} }
   function saveUi(){ try{ localStorage.setItem(STORE_KEY+"-ui", JSON.stringify({onboardDismissed:uiState.onboardDismissed, theme:uiState.theme, language:uiState.language})); }catch(e){} }
@@ -2876,7 +3018,69 @@ window.__logoNextFallback = function(img){
     }, 0);
   }
   function liabTotal(){ var t=0; state.liabilities.forEach(function(l){ t += convertAmount(liabBalance(l), l.currency||state.currency, state.currency); }); return t; }
-  function netWorth(){ return investTotal() + cashTotal() - liabTotal(); }
+
+  // ---------- Real estate funds (Stake-style: units + price per unit + rental distributions) ----------
+  function reFundUnits(f){
+    var units = 0;
+    (f.transactions||[]).forEach(function(tx){
+      if(tx.type === "buy") units += tx.units;
+      else if(tx.type === "sell") units -= tx.units;
+    });
+    return units;
+  }
+  function reFundValue(f){ return reFundUnits(f) * (f.pricePerUnit||0); }
+  function reFundCostBasis(f){
+    var cost = 0;
+    (f.transactions||[]).forEach(function(tx){
+      if(tx.type === "buy") cost += tx.amount;
+      else if(tx.type === "sell") cost -= tx.amount;
+    });
+    return cost;
+  }
+  function reFundRentalTotal(f){
+    var total = 0;
+    (f.transactions||[]).forEach(function(tx){ if(tx.type === "rental") total += tx.amount; });
+    return total;
+  }
+  function realEstateTotal(){
+    var t=0;
+    state.realEstateFunds.forEach(function(f){ t += convertAmount(reFundValue(f), f.currency||state.currency, state.currency); });
+    return t;
+  }
+
+  // ---------- Deposits (bank / deposit-app term deposits) ----------
+  function depositTermDays(d){
+    var v = Number(d.termValue)||0;
+    if(d.termUnit === "year") return v*365;
+    if(d.termUnit === "month") return v*30;
+    return v;
+  }
+  function depositMaturityDate(d){
+    var start = new Date(d.startDate);
+    return new Date(start.getTime() + depositTermDays(d)*86400000);
+  }
+  function depositExpectedProfit(d){
+    var years = depositTermDays(d)/365;
+    return (Number(d.principal)||0) * ((Number(d.rate)||0)/100) * years;
+  }
+  function depositExpectedFinal(d){ return (Number(d.principal)||0) + depositExpectedProfit(d); }
+  function depositAccruedProfit(d){
+    if(d.status === "closed") return typeof d.closedProfit === "number" ? d.closedProfit : 0;
+    var start = new Date(d.startDate).getTime();
+    var elapsedDays = Math.max(0, (Date.now()-start)/86400000);
+    var termDays = depositTermDays(d);
+    elapsedDays = Math.min(elapsedDays, termDays);
+    var years = elapsedDays/365;
+    return (Number(d.principal)||0) * ((Number(d.rate)||0)/100) * years;
+  }
+  function depositCurrentValue(d){ return (Number(d.principal)||0) + depositAccruedProfit(d); }
+  function depositsTotal(){
+    var t=0;
+    state.deposits.forEach(function(d){ t += convertAmount(depositCurrentValue(d), d.currency||state.currency, state.currency); });
+    return t;
+  }
+
+  function netWorth(){ return investTotal() + cashTotal() + realEstateTotal() + depositsTotal() - liabTotal(); }
 
   // ---------- Transaction-derived net worth timeline ----------
   function investValueAt(cutoffTime){
@@ -3954,6 +4158,42 @@ window.__logoNextFallback = function(img){
       });
     }
 
+    var reSummary = document.getElementById("nwRESummary");
+    if(state.realEstateFunds.length===0){
+      reSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">◈</div><div class="nc-title">'+t("empty_not_connected_title")+'</div><div class="nc-sub">'+t("empty_re_not_connected_sub")+'</div></div>';
+    } else {
+      var reHtml = '<div class="list-card">';
+      state.realEstateFunds.forEach(function(f){
+        var val = reFundValue(f);
+        var fCurr = f.currency || state.currency;
+        var units = reFundUnits(f);
+        reHtml += '<div class="row-card" data-re="'+f.id+'"><div class="left"><div class="ticker-line"><span class="ticker">'+escapeHtml(f.name)+'</span></div><div class="meta">'+units+' '+t("units")+'</div></div><div class="right"><div class="val num">'+(uiState.hideAmounts?redactBar("sm"):fmtIn(val, fCurr))+'</div></div></div>';
+      });
+      reHtml += '</div>';
+      reSummary.innerHTML = reHtml;
+      reSummary.querySelectorAll('[data-re]').forEach(function(el){
+        el.addEventListener("click", function(){ openReModal(el.dataset.re); });
+      });
+    }
+
+    var depositsSummary = document.getElementById("nwDepositsSummary");
+    if(state.deposits.length===0){
+      depositsSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">%</div><div class="nc-title">'+t("empty_not_connected_title")+'</div><div class="nc-sub">'+t("empty_deposits_not_connected_sub")+'</div></div>';
+    } else {
+      var depHtml = '<div class="list-card">';
+      state.deposits.forEach(function(d){
+        var val = depositCurrentValue(d);
+        var dCurr = d.currency || state.currency;
+        var statusNote = d.status === "closed" ? (" · "+t("deposit_closed")) : "";
+        depHtml += '<div class="row-card" data-deposit="'+d.id+'"><div class="left"><div class="ticker-line"><span class="ticker">'+escapeHtml(d.name)+'</span></div><div class="meta">'+d.rate+'% · '+d.termValue+' '+t("unit_"+d.termUnit+"s")+statusNote+'</div></div><div class="right"><div class="val num">'+(uiState.hideAmounts?redactBar("sm"):fmtIn(val, dCurr))+'</div></div></div>';
+      });
+      depHtml += '</div>';
+      depositsSummary.innerHTML = depHtml;
+      depositsSummary.querySelectorAll('[data-deposit]').forEach(function(el){
+        el.addEventListener("click", function(){ openDepositModal(el.dataset.deposit); });
+      });
+    }
+
     var liabSummary = document.getElementById("nwLiabSummary");
     if(state.liabilities.length===0){
       liabSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">◈</div><div class="nc-title">'+t("empty_not_connected_title")+'</div><div class="nc-sub">'+t("empty_liab_not_connected_sub")+'</div></div>';
@@ -3976,8 +4216,8 @@ window.__logoNextFallback = function(img){
   }
 
   function applyNwSubFilter(){
-    var blocks = { investments:"nwBlockInvest", cash:"nwBlockCash", liabilities:"nwBlockLiab" };
-    ["nwBlockInvest","nwBlockCash","nwBlockLiab"].forEach(function(id){ document.getElementById(id).style.display = "block"; });
+    var blocks = { investments:"nwBlockInvest", cash:"nwBlockCash", realestate:"nwBlockRE", deposits:"nwBlockDeposits", liabilities:"nwBlockLiab" };
+    ["nwBlockInvest","nwBlockCash","nwBlockRE","nwBlockDeposits","nwBlockLiab"].forEach(function(id){ document.getElementById(id).style.display = "block"; });
     if(nwCurrentSub !== "overview"){
       Object.keys(blocks).forEach(function(key){
         document.getElementById(blocks[key]).style.display = (key===nwCurrentSub) ? "block" : "none";
@@ -3994,7 +4234,7 @@ window.__logoNextFallback = function(img){
     });
   });
 
-  var nwSubOrder = ["overview","investments","cash","liabilities"];
+  var nwSubOrder = ["overview","investments","cash","realestate","deposits","liabilities"];
   function setNwSub(sub){
     document.querySelectorAll(".nwsub-btn").forEach(function(b){
       b.classList.toggle("active", b.dataset.sub===sub);
@@ -4723,30 +4963,76 @@ window.__logoNextFallback = function(img){
     });
   }
 
+  function populateEfAccountOptions(){
+    var select = document.getElementById("efAccount");
+    var current = (state.emergencyFund.accountType && state.emergencyFund.accountId) ? (state.emergencyFund.accountType+":"+state.emergencyFund.accountId) : "";
+    select.innerHTML = '<option value="">'+t("ef_manual_no_account")+'</option>';
+    state.cash.forEach(function(c){
+      var opt = document.createElement("option");
+      opt.value = "cash:"+c.id; opt.textContent = c.name;
+      select.appendChild(opt);
+    });
+    state.deposits.forEach(function(d){
+      var opt = document.createElement("option");
+      opt.value = "deposit:"+d.id; opt.textContent = d.name;
+      select.appendChild(opt);
+    });
+    var validValue = Array.prototype.some.call(select.options, function(o){ return o.value === current; });
+    select.value = validValue ? current : "";
+    syncTriggerLabel("efAccount", "efAccountTrigger");
+  }
+  function emergencyFundCurrentBalance(){
+    var ef = state.emergencyFund;
+    if(ef.accountType === "cash"){
+      var c = state.cash.find(function(x){return x.id===ef.accountId;});
+      return c ? convertAmount(c.balance, c.currency||state.currency, state.currency) : 0;
+    }
+    if(ef.accountType === "deposit"){
+      var d = state.deposits.find(function(x){return x.id===ef.accountId;});
+      return d ? convertAmount(depositCurrentValue(d), d.currency||state.currency, state.currency) : 0;
+    }
+    return 0;
+  }
   function renderEmergencyFund(){
-    var cash = cashTotal();
-    document.getElementById("efCash").innerHTML = uiState.hideAmounts ? redactBar("sm") : fmt(cash);
-    var expenses = state.monthlyExpenses || 0;
+    populateEfAccountOptions();
+    document.getElementById("efTarget").value = state.emergencyFund.targetAmount || "";
+    var target = state.emergencyFund.targetAmount || 0;
+    var current = emergencyFundCurrentBalance();
+    document.getElementById("efCurrent").innerHTML = uiState.hideAmounts ? redactBar("sm") : fmt(current);
     var noteEl = document.getElementById("efNote");
-    var monthsEl = document.getElementById("efMonths");
-    if(expenses <= 0){
-      monthsEl.textContent = "—";
+    var pctEl = document.getElementById("efPct");
+    if(target <= 0){
+      pctEl.textContent = "—";
       noteEl.textContent = t("ef_note_none");
       return;
     }
-    var months = cash / expenses;
-    monthsEl.textContent = months.toFixed(1);
-    if(months < 3){
+    var pct = Math.min(100, (current/target)*100);
+    pctEl.textContent = pct.toFixed(0)+"%";
+    if(pct < 50){
       noteEl.textContent = t("ef_note_low");
-    } else if(months <= 6){
+    } else if(pct < 100){
       noteEl.textContent = t("ef_note_ok");
     } else {
       noteEl.textContent = t("ef_note_high");
     }
   }
-  document.getElementById("efExpenses").addEventListener("input", function(){
-    state.monthlyExpenses = parseFloat(this.value) || 0;
+  document.getElementById("efTarget").addEventListener("input", function(){
+    state.emergencyFund.targetAmount = parseFloat(this.value) || 0;
     save();
+    renderEmergencyFund();
+  });
+  document.getElementById("efAccount").addEventListener("change", function(){
+    var val = this.value;
+    if(!val){
+      state.emergencyFund.accountType = "";
+      state.emergencyFund.accountId = "";
+    } else {
+      var parts = val.split(":");
+      state.emergencyFund.accountType = parts[0];
+      state.emergencyFund.accountId = parts[1];
+    }
+    save();
+    syncTriggerLabel("efAccount", "efAccountTrigger");
     renderEmergencyFund();
   });
 
@@ -5768,6 +6054,7 @@ window.__logoNextFallback = function(img){
 
   // ---------- Cash modal ----------
   var editingCashId = null;
+  var pendingCashCurrency = "$";
   var cashOverlay = document.getElementById("cashOverlay");
   function renderCashTxnHistory(c){
     var wrap = document.getElementById("cashTxnHistory");
@@ -5797,50 +6084,354 @@ window.__logoNextFallback = function(img){
   }
 
   function updateCashBalancePreview(){
-    var c = state.cash.find(function(x){return x.id===editingCashId;});
-    if(!c) return;
     var amount = parseFloat(document.getElementById("cAmount").value) || 0;
     var type = document.getElementById("cTxnType").value;
     var delta = type === "withdrawal" ? -amount : amount;
-    document.getElementById("cashBalancePreview").textContent = fmtIn(c.balance + delta, c.currency);
+    var existing = editingCashId ? state.cash.find(function(x){return x.id===editingCashId;}) : null;
+    var current = existing ? existing.balance : 0;
+    document.getElementById("cashBalancePreview").textContent = fmtIn(current + delta, pendingCashCurrency);
   }
   document.getElementById("cAmount").addEventListener("input", updateCashBalancePreview);
   document.getElementById("cTxnType").addEventListener("change", updateCashBalancePreview);
 
+  function refreshCashCurrencyChip(currency){
+    var label = CURRENCY_LABELS[currency] || currency.trim();
+    document.getElementById("cCurrencyTrigger").textContent = label + " ▾";
+  }
+  document.getElementById("cCurrencyTrigger").addEventListener("click", function(){
+    var select = document.getElementById("currencySelect");
+    openPicker(t("currency"), optionsFromSelect(select), pendingCashCurrency).then(function(value){
+      pendingCashCurrency = value;
+      refreshCashCurrencyChip(pendingCashCurrency);
+      updateCashBalancePreview();
+    });
+  });
+
   function openCashModal(id){
-    editingCashId = id;
-    var c = state.cash.find(function(x){return x.id===id;});
-    document.getElementById("cashModalTitle").textContent = c.name;
+    editingCashId = id || null;
+    var delBtn = document.getElementById("deleteCashBtn");
     document.getElementById("cTxnType").value = "deposit";
     syncTriggerLabel("cTxnType", "cTxnTypeTrigger");
     document.getElementById("cTxnDate").value = new Date().toISOString().slice(0,10);
     document.getElementById("cAmount").value = "";
-    document.getElementById("cCurrencyLabel").textContent = currencySymbol(c.currency);
-    renderCashTxnHistory(c);
+    if(id){
+      var c = state.cash.find(function(x){return x.id===id;});
+      document.getElementById("cashModalTitle").textContent = t("edit_cash_account");
+      document.getElementById("cAccountName").value = c.name;
+      pendingCashCurrency = c.currency || "$";
+      delBtn.style.display = "block";
+      renderCashTxnHistory(c);
+    } else {
+      document.getElementById("cashModalTitle").textContent = t("add_cash_account");
+      document.getElementById("cAccountName").value = "";
+      pendingCashCurrency = "$";
+      delBtn.style.display = "none";
+      document.getElementById("cashTxnHistory").style.display = "none";
+    }
+    refreshCashCurrencyChip(pendingCashCurrency);
     updateCashBalancePreview();
     cashOverlay.classList.add("open");
   }
+  document.getElementById("nwPlusCash").addEventListener("click", function(){ openCashModal(null); });
   document.getElementById("closeCashModal").addEventListener("click", function(){cashOverlay.classList.remove("open");});
   cashOverlay.addEventListener("click", function(e){ if(e.target===cashOverlay) cashOverlay.classList.remove("open"); });
   document.getElementById("saveCashBtn").addEventListener("click", function(){
+    var accountName = document.getElementById("cAccountName").value.trim();
     var type = document.getElementById("cTxnType").value;
     var date = document.getElementById("cTxnDate").value;
     var amount = parseFloat(document.getElementById("cAmount").value);
-    if(!date || isNaN(amount) || amount<=0){ showNotice(t("enter_date_amount")); return; }
+    if(!accountName){ showNotice(t("enter_account_name")); return; }
+    if(!editingCashId && (!date || isNaN(amount) || amount<=0)){ showNotice(t("enter_date_amount")); return; }
 
-    var c = state.cash.find(function(x){return x.id===editingCashId;});
-    if(!c.transactions) c.transactions = [];
-    c.transactions.push({ id:uid(), type:type, amount:amount, date:date });
-    c.balance += (type === "withdrawal" ? -amount : amount);
+    var c;
+    if(editingCashId){
+      c = state.cash.find(function(x){return x.id===editingCashId;});
+      c.name = accountName;
+      c.currency = pendingCashCurrency;
+    } else {
+      c = { id: uid(), name: accountName, currency: pendingCashCurrency, balance: 0, transactions: [] };
+      state.cash.push(c);
+      editingCashId = c.id;
+    }
+    if(!isNaN(amount) && amount>0 && date){
+      if(!c.transactions) c.transactions = [];
+      c.transactions.push({ id:uid(), type:type, amount:amount, date:date });
+      c.balance += (type === "withdrawal" ? -amount : amount);
+    }
     save();
 
     document.getElementById("cTxnType").value = "deposit";
     syncTriggerLabel("cTxnType", "cTxnTypeTrigger");
     document.getElementById("cTxnDate").value = new Date().toISOString().slice(0,10);
     document.getElementById("cAmount").value = "";
+    document.getElementById("cashModalTitle").textContent = t("edit_cash_account");
+    document.getElementById("deleteCashBtn").style.display = "block";
     renderCashTxnHistory(c);
     updateCashBalancePreview();
     renderAll();
+  });
+  document.getElementById("deleteCashBtn").addEventListener("click", function(){
+    if(!editingCashId) return;
+    openConfirm(t("confirm_delete_cash_account")).then(function(ok){
+      if(!ok) return;
+      state.cash = state.cash.filter(function(x){return x.id!==editingCashId;});
+      save(); cashOverlay.classList.remove("open"); renderAll();
+    });
+  });
+
+  // ---------- Real estate fund modal ----------
+  var editingREId = null;
+  var pendingRECurrency = "$";
+  var reOverlay = document.getElementById("reOverlay");
+  function refreshReCurrencyChip(currency){
+    var label = CURRENCY_LABELS[currency] || currency.trim();
+    document.getElementById("reCurrencyTrigger").textContent = label + " ▾";
+  }
+  document.getElementById("reCurrencyTrigger").addEventListener("click", function(){
+    var select = document.getElementById("currencySelect");
+    openPicker(t("currency"), optionsFromSelect(select), pendingRECurrency).then(function(value){
+      pendingRECurrency = value;
+      refreshReCurrencyChip(pendingRECurrency);
+      updateReValuePreview();
+    });
+  });
+  var RE_LABELS = { buy:"re_buy", sell:"re_sell", rental:"re_rental" };
+  var RE_CLASS = { buy:"borrowed", sell:"repayment", rental:"repayment" };
+  function renderReTxnHistory(f){
+    var wrap = document.getElementById("reTxnHistory");
+    var list = document.getElementById("reTxnList");
+    var txns = f.transactions || [];
+    document.getElementById("reValuePreviewTop").textContent = fmtIn(reFundValue(f), f.currency);
+    if(txns.length === 0){ wrap.style.display = "none"; return; }
+    wrap.style.display = "block";
+    list.innerHTML = "";
+    txns.slice().sort(function(a,b){ return new Date(b.date)-new Date(a.date); }).forEach(function(tx){
+      var dateStr = new Date(tx.date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
+      var row = document.createElement("div"); row.className = "liab-txn-row";
+      var unitsNote = tx.type !== "rental" ? (" · "+tx.units+" "+t("units")) : "";
+      row.innerHTML =
+        '<div class="ltr-left"><span class="ltr-type '+RE_CLASS[tx.type]+'">'+t(RE_LABELS[tx.type])+'</span><span class="ltr-date">'+dateStr+unitsNote+'</span></div>' +
+        '<span class="ltr-amt '+RE_CLASS[tx.type]+'">'+(tx.type==="sell"||tx.type==="rental"?"+":"-")+fmtIn(tx.amount, f.currency)+'</span>' +
+        '<button class="ltr-del" aria-label="Delete transaction">×</button>';
+      row.querySelector(".ltr-del").addEventListener("click", function(){
+        f.transactions = f.transactions.filter(function(x){ return x.id !== tx.id; });
+        save();
+        renderReTxnHistory(f);
+        updateReValuePreview();
+        renderAll();
+      });
+      list.appendChild(row);
+    });
+  }
+  function updateReValuePreview(){
+    var price = parseFloat(document.getElementById("rePricePerUnit").value) || 0;
+    var f = editingREId ? state.realEstateFunds.find(function(x){return x.id===editingREId;}) : null;
+    var units = f ? reFundUnits(f) : 0;
+    var type = document.getElementById("reTxnType").value;
+    var pendingUnits = parseFloat(document.getElementById("reUnits").value) || 0;
+    if(type === "buy") units += pendingUnits;
+    else if(type === "sell") units -= pendingUnits;
+    document.getElementById("reValuePreview").textContent = fmtIn(units*price, pendingRECurrency);
+  }
+  document.getElementById("rePricePerUnit").addEventListener("input", updateReValuePreview);
+  document.getElementById("reUnits").addEventListener("input", updateReValuePreview);
+  document.getElementById("reTxnType").addEventListener("change", function(){
+    var type = this.value;
+    document.getElementById("reUnitsField").style.display = (type === "rental") ? "none" : "block";
+    updateReValuePreview();
+  });
+  function openReModal(id){
+    editingREId = id || null;
+    var delBtn = document.getElementById("deleteReBtn");
+    document.getElementById("reTxnType").value = "buy";
+    syncTriggerLabel("reTxnType", "reTxnTypeTrigger");
+    document.getElementById("reUnitsField").style.display = "block";
+    document.getElementById("reDate").value = new Date().toISOString().slice(0,10);
+    document.getElementById("reUnits").value = "";
+    document.getElementById("reAmount").value = "";
+    if(id){
+      var f = state.realEstateFunds.find(function(x){return x.id===id;});
+      document.getElementById("reModalTitle").textContent = t("edit_re_fund");
+      document.getElementById("reName").value = f.name;
+      document.getElementById("reFundType").value = f.fundType || "income";
+      syncTriggerLabel("reFundType", "reFundTypeTrigger");
+      document.getElementById("rePricePerUnit").value = f.pricePerUnit || "";
+      pendingRECurrency = f.currency || "$";
+      delBtn.style.display = "block";
+      renderReTxnHistory(f);
+    } else {
+      document.getElementById("reModalTitle").textContent = t("add_re_fund");
+      document.getElementById("reName").value = "";
+      document.getElementById("reFundType").value = "income";
+      syncTriggerLabel("reFundType", "reFundTypeTrigger");
+      document.getElementById("rePricePerUnit").value = "";
+      pendingRECurrency = "$";
+      delBtn.style.display = "none";
+      document.getElementById("reTxnHistory").style.display = "none";
+    }
+    refreshReCurrencyChip(pendingRECurrency);
+    updateReValuePreview();
+    reOverlay.classList.add("open");
+  }
+  document.getElementById("nwPlusRE").addEventListener("click", function(){ openReModal(null); });
+  document.getElementById("closeReModal").addEventListener("click", function(){reOverlay.classList.remove("open");});
+  reOverlay.addEventListener("click", function(e){ if(e.target===reOverlay) reOverlay.classList.remove("open"); });
+  document.getElementById("saveReBtn").addEventListener("click", function(){
+    var name = document.getElementById("reName").value.trim();
+    var fundType = document.getElementById("reFundType").value;
+    var price = parseFloat(document.getElementById("rePricePerUnit").value) || 0;
+    var type = document.getElementById("reTxnType").value;
+    var units = parseFloat(document.getElementById("reUnits").value);
+    var amount = parseFloat(document.getElementById("reAmount").value);
+    var date = document.getElementById("reDate").value;
+    if(!name){ showNotice(t("enter_account_name")); return; }
+
+    var f;
+    if(editingREId){
+      f = state.realEstateFunds.find(function(x){return x.id===editingREId;});
+      f.name = name; f.fundType = fundType; f.currency = pendingRECurrency; f.pricePerUnit = price;
+    } else {
+      f = { id: uid(), name:name, fundType:fundType, currency:pendingRECurrency, pricePerUnit:price, transactions:[] };
+      state.realEstateFunds.push(f);
+      editingREId = f.id;
+    }
+    if(!f.transactions) f.transactions = [];
+    if(type === "rental"){
+      if(!isNaN(amount) && amount>0 && date){
+        f.transactions.push({ id:uid(), type:"rental", units:0, amount:amount, date:date });
+      }
+    } else {
+      if(!isNaN(units) && units>0 && !isNaN(amount) && amount>0 && date){
+        f.transactions.push({ id:uid(), type:type, units:units, amount:amount, date:date });
+      }
+    }
+    save();
+
+    document.getElementById("reUnits").value = "";
+    document.getElementById("reAmount").value = "";
+    document.getElementById("reModalTitle").textContent = t("edit_re_fund");
+    document.getElementById("deleteReBtn").style.display = "block";
+    renderReTxnHistory(f);
+    updateReValuePreview();
+    renderAll();
+  });
+  document.getElementById("deleteReBtn").addEventListener("click", function(){
+    if(!editingREId) return;
+    openConfirm(t("confirm_delete_re_fund")).then(function(ok){
+      if(!ok) return;
+      state.realEstateFunds = state.realEstateFunds.filter(function(x){return x.id!==editingREId;});
+      save(); reOverlay.classList.remove("open"); renderAll();
+    });
+  });
+
+  // ---------- Deposit modal ----------
+  var editingDepositId = null;
+  var pendingDepositCurrency = "$";
+  var depositOverlay = document.getElementById("depositOverlay");
+  function refreshDepositCurrencyChip(currency){
+    var label = CURRENCY_LABELS[currency] || currency.trim();
+    document.getElementById("depCurrencyTrigger").textContent = label + " ▾";
+  }
+  document.getElementById("depCurrencyTrigger").addEventListener("click", function(){
+    var select = document.getElementById("currencySelect");
+    openPicker(t("currency"), optionsFromSelect(select), pendingDepositCurrency).then(function(value){
+      pendingDepositCurrency = value;
+      refreshDepositCurrencyChip(pendingDepositCurrency);
+      updateDepositPreview();
+    });
+  });
+  function updateDepositPreview(){
+    var principal = parseFloat(document.getElementById("depPrincipal").value) || 0;
+    var startDate = document.getElementById("depStartDate").value;
+    var termValue = parseFloat(document.getElementById("depTermValue").value) || 0;
+    var termUnit = document.getElementById("depTermUnit").value;
+    var rate = parseFloat(document.getElementById("depRate").value) || 0;
+    var box = document.getElementById("depositSummaryBox");
+    if(!startDate || termValue<=0 || principal<=0){ box.style.display = "none"; return; }
+    box.style.display = "block";
+    var existing = editingDepositId ? state.deposits.find(function(x){return x.id===editingDepositId;}) : null;
+    var d = { principal:principal, startDate:startDate, termValue:termValue, termUnit:termUnit, rate:rate, status: existing ? existing.status : "active", closedProfit: existing ? existing.closedProfit : undefined };
+    document.getElementById("depMaturityPreview").textContent = depositMaturityDate(d).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
+    document.getElementById("depExpectedPreview").textContent = fmtIn(depositExpectedProfit(d), pendingDepositCurrency);
+    document.getElementById("depAccruedPreview").textContent = fmtIn(depositAccruedProfit(d), pendingDepositCurrency);
+  }
+  ["depPrincipal","depStartDate","depTermValue","depRate"].forEach(function(id){
+    document.getElementById(id).addEventListener("input", updateDepositPreview);
+  });
+  document.getElementById("depTermUnit").addEventListener("change", updateDepositPreview);
+  function openDepositModal(id){
+    editingDepositId = id || null;
+    var delBtn = document.getElementById("deleteDepositBtn");
+    var closeBtn = document.getElementById("closeDepositBtn");
+    document.getElementById("depTermUnit").value = "month";
+    syncTriggerLabel("depTermUnit", "depTermUnitTrigger");
+    if(id){
+      var d = state.deposits.find(function(x){return x.id===id;});
+      document.getElementById("depositModalTitle").textContent = t("edit_deposit");
+      document.getElementById("depName").value = d.name;
+      document.getElementById("depPrincipal").value = d.principal;
+      document.getElementById("depStartDate").value = d.startDate;
+      document.getElementById("depTermValue").value = d.termValue;
+      document.getElementById("depTermUnit").value = d.termUnit;
+      syncTriggerLabel("depTermUnit", "depTermUnitTrigger");
+      document.getElementById("depRate").value = d.rate;
+      pendingDepositCurrency = d.currency || "$";
+      delBtn.style.display = "block";
+      closeBtn.style.display = (d.status === "closed") ? "none" : "block";
+    } else {
+      document.getElementById("depositModalTitle").textContent = t("add_deposit");
+      document.getElementById("depName").value = "";
+      document.getElementById("depPrincipal").value = "";
+      document.getElementById("depStartDate").value = new Date().toISOString().slice(0,10);
+      document.getElementById("depTermValue").value = "";
+      document.getElementById("depRate").value = "";
+      pendingDepositCurrency = "$";
+      delBtn.style.display = "none";
+      closeBtn.style.display = "none";
+    }
+    refreshDepositCurrencyChip(pendingDepositCurrency);
+    updateDepositPreview();
+    depositOverlay.classList.add("open");
+  }
+  document.getElementById("nwPlusDeposit").addEventListener("click", function(){ openDepositModal(null); });
+  document.getElementById("closeDepositModal").addEventListener("click", function(){depositOverlay.classList.remove("open");});
+  depositOverlay.addEventListener("click", function(e){ if(e.target===depositOverlay) depositOverlay.classList.remove("open"); });
+  document.getElementById("saveDepositBtn").addEventListener("click", function(){
+    var name = document.getElementById("depName").value.trim();
+    var principal = parseFloat(document.getElementById("depPrincipal").value);
+    var startDate = document.getElementById("depStartDate").value;
+    var termValue = parseFloat(document.getElementById("depTermValue").value);
+    var termUnit = document.getElementById("depTermUnit").value;
+    var rate = parseFloat(document.getElementById("depRate").value) || 0;
+    if(!name){ showNotice(t("enter_account_name")); return; }
+    if(!startDate || isNaN(principal) || principal<=0 || isNaN(termValue) || termValue<=0){ showNotice(t("enter_deposit_fields")); return; }
+
+    if(editingDepositId){
+      var d = state.deposits.find(function(x){return x.id===editingDepositId;});
+      d.name=name; d.principal=principal; d.currency=pendingDepositCurrency; d.startDate=startDate; d.termValue=termValue; d.termUnit=termUnit; d.rate=rate;
+    } else {
+      state.deposits.push({ id:uid(), name:name, principal:principal, currency:pendingDepositCurrency, startDate:startDate, termValue:termValue, termUnit:termUnit, rate:rate, status:"active" });
+    }
+    save(); depositOverlay.classList.remove("open"); renderAll();
+  });
+  document.getElementById("closeDepositBtn").addEventListener("click", function(){
+    if(!editingDepositId) return;
+    openConfirm(t("confirm_terminate_deposit")).then(function(ok){
+      if(!ok) return;
+      var d = state.deposits.find(function(x){return x.id===editingDepositId;});
+      d.closedProfit = depositAccruedProfit(d);
+      d.status = "closed";
+      d.closedDate = new Date().toISOString().slice(0,10);
+      save(); depositOverlay.classList.remove("open"); renderAll();
+    });
+  });
+  document.getElementById("deleteDepositBtn").addEventListener("click", function(){
+    if(!editingDepositId) return;
+    openConfirm(t("confirm_delete_deposit")).then(function(ok){
+      if(!ok) return;
+      state.deposits = state.deposits.filter(function(x){return x.id!==editingDepositId;});
+      save(); depositOverlay.classList.remove("open"); renderAll();
+    });
   });
 
   // ---------- Liability modal ----------
@@ -6239,7 +6830,10 @@ window.__logoNextFallback = function(img){
           portfolios: Array.isArray(incoming.portfolios) && incoming.portfolios.length ? incoming.portfolios : [{id:"default", name:"Main portfolio"}],
           watchlists: Array.isArray(incoming.watchlists) && incoming.watchlists.length ? incoming.watchlists : [{id:"default", name:"My watchlist"}],
           monthlyExpenses: typeof incoming.monthlyExpenses === "number" ? incoming.monthlyExpenses : 0,
-          realizedPnL: Array.isArray(incoming.realizedPnL) ? incoming.realizedPnL : []
+          realizedPnL: Array.isArray(incoming.realizedPnL) ? incoming.realizedPnL : [],
+          realEstateFunds: Array.isArray(incoming.realEstateFunds) ? incoming.realEstateFunds : [],
+          deposits: Array.isArray(incoming.deposits) ? incoming.deposits : [],
+          emergencyFund: (incoming.emergencyFund && typeof incoming.emergencyFund === "object") ? incoming.emergencyFund : { targetAmount:0, accountType:"", accountId:"" }
         };
         var defId = state.portfolios[0].id;
         state.holdings.forEach(function(h){ if(!h.portfolioId) h.portfolioId = defId; });
@@ -6259,7 +6853,7 @@ window.__logoNextFallback = function(img){
   document.getElementById("resetDataBtn").addEventListener("click", function(){
     openConfirm(t("confirm_clear_all")).then(function(ok){
       if(!ok) return;
-      state = { currency: state.currency, holdings:[], dividends:[], cash:[], liabilities:[], contributions:[], monthlyGoal:0, goals:[], sheetWebAppUrl: state.sheetWebAppUrl, watchlist:[], portfolios:[{id:"default", name:"Main portfolio"}], watchlists:[{id:"default", name:"My watchlist"}], monthlyExpenses:0, realizedPnL:[] };
+      state = { currency: state.currency, holdings:[], dividends:[], cash:[], liabilities:[], realEstateFunds:[], deposits:[], contributions:[], monthlyGoal:0, goals:[], sheetWebAppUrl: state.sheetWebAppUrl, watchlist:[], portfolios:[{id:"default", name:"Main portfolio"}], watchlists:[{id:"default", name:"My watchlist"}], monthlyExpenses:0, realizedPnL:[], emergencyFund:{ targetAmount:0, accountType:"", accountId:"" } };
       consolidateCashAccounts();
       save(); settingsOverlay.classList.remove("open"); renderAll();
     });
@@ -6282,6 +6876,10 @@ window.__logoNextFallback = function(img){
   wireCustomSelect("lCategory", "lCategoryTrigger", "Category");
   wireCustomSelect("lTxnType", "lTxnTypeTrigger", "Transaction type");
   wireCustomSelect("cTxnType", "cTxnTypeTrigger", "Transaction type");
+  wireCustomSelect("reFundType", "reFundTypeTrigger", "Fund type");
+  wireCustomSelect("reTxnType", "reTxnTypeTrigger", "Transaction type");
+  wireCustomSelect("depTermUnit", "depTermUnitTrigger", "Term unit");
+  wireCustomSelect("efAccount", "efAccountTrigger", "Linked account");
   document.getElementById("dHoldingTrigger").addEventListener("click", function(){
     var select = document.getElementById("dHolding");
     openPicker("Holding", optionsFromSelect(select), select.value).then(function(value){
@@ -6315,7 +6913,6 @@ window.__logoNextFallback = function(img){
   refreshAllCurrencyChips();
 
   load();
-  document.getElementById("efExpenses").value = state.monthlyExpenses || "";
   setFab(currentPage);
   renderAll();
 })();
