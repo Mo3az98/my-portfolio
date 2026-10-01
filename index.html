@@ -73,6 +73,8 @@
   html::-webkit-scrollbar{ display:none; width:0; height:0; }
   *{ scrollbar-width:none; -ms-overflow-style:none; }
   *::-webkit-scrollbar{ display:none; width:0; height:0; }
+  *{ -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; -webkit-touch-callout:none; }
+  input, textarea, select, [contenteditable="true"]{ -webkit-user-select:text; -moz-user-select:text; -ms-user-select:text; user-select:text; -webkit-touch-callout:default; }
   body{
     margin:0; background:var(--bg); color:var(--text);
     font-family:var(--font-ui);
@@ -760,6 +762,16 @@
       </div>
 
       <div class="section-heading"><h2 data-i18n="positions">Positions</h2><span class="totals" id="holdingsCount"></span></div>
+      <div class="field" style="margin-bottom:10px;">
+        <select id="holdingsSortSelect" style="display:none;">
+          <option value="value_desc" data-i18n="sort_value">Value (high to low)</option>
+          <option value="name_asc" data-i18n="sort_name">Name (A–Z)</option>
+          <option value="ticker_asc" data-i18n="sort_ticker">Ticker (A–Z)</option>
+          <option value="gain_desc" data-i18n="sort_most_profit">Most profit</option>
+          <option value="gain_asc" data-i18n="sort_most_loss">Most loss</option>
+        </select>
+        <button type="button" class="select-trigger" id="holdingsSortSelectTrigger"><span class="tlabel"></span><span class="chev">▾</span></button>
+      </div>
       <div class="list-card" id="holdingsList"></div>
       <button class="add-btn" id="addHoldingBtn" data-i18n="add_holding_manually">+ Add holding manually</button>
       <button class="add-btn" id="importHoldingsBtn" data-i18n="import_trades">Import trades from Excel/CSV</button>
@@ -1023,6 +1035,7 @@
         <option value="Utilities" data-i18n="sector_utilities">Utilities</option>
         <option value="Real Estate" data-i18n="sector_re">Real Estate</option>
         <option value="Communication Services" data-i18n="sector_comm">Communication Services</option>
+        <option value="ETF" data-i18n="sector_etf">ETF</option>
         <option value="Other" data-i18n="sector_other">Other</option>
       </select>
       <button type="button" class="select-trigger" id="hSectorTrigger"><span class="tlabel"></span><span class="chev">▾</span></button>
@@ -1154,6 +1167,22 @@
       <button type="button" class="select-trigger" id="dStatusTrigger"><span class="tlabel"></span><span class="chev">▾</span></button>
     </div>
     <div class="modal-actions"><button class="btn danger" id="deleteDivBtn" style="display:none;" data-i18n="delete">Delete</button><button class="btn primary" id="saveDivBtn" data-i18n="save_dividend">Save dividend</button></div>
+  </div>
+</div>
+
+<!-- Realized P&L edit modal -->
+<div class="overlay" id="realizedEditOverlay">
+  <div class="modal">
+    <h3><span data-i18n="edit_realized_title">Edit realized entry</span><button id="closeRealizedEditModal" aria-label="Close">×</button></h3>
+    <div class="field-row">
+      <div class="field"><label for="rzDate" data-i18n="date">Date</label><input id="rzDate" type="date" /></div>
+      <div class="field"><label for="rzUnits" data-i18n="units">Units</label><input id="rzUnits" type="number" step="any" inputmode="decimal" /></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label for="rzSellPrice" data-i18n="sell_price">Sell price</label><input id="rzSellPrice" type="number" step="any" inputmode="decimal" /></div>
+      <div class="field"><label for="rzAvgCost" data-i18n="avg_cost_at_sale">Avg. cost at sale</label><input id="rzAvgCost" type="number" step="any" inputmode="decimal" /></div>
+    </div>
+    <div class="modal-actions"><button class="btn danger" id="deleteRealizedBtn" data-i18n="delete">Delete</button><button class="btn primary" id="saveRealizedBtn" data-i18n="save">Save</button></div>
   </div>
 </div>
 
@@ -1339,6 +1368,24 @@
       <button class="btn danger" id="deleteDepositBtn" style="display:none;" data-i18n="delete_account">Delete account</button>
       <button class="btn primary" id="saveDepositBtn" data-i18n="save">Save</button>
     </div>
+  </div>
+</div>
+
+<!-- Deposit termination modal -->
+<div class="overlay" id="depositCloseOverlay">
+  <div class="modal">
+    <h3><span data-i18n="deposit_terminate">Terminate deposit</span><button id="closeDepositCloseModal" aria-label="Close">×</button></h3>
+    <div class="field"><label for="dcDate" data-i18n="deposit_termination_date">Termination date</label><input id="dcDate" type="date" /></div>
+    <div class="field"><label for="dcMode" data-i18n="deposit_termination_profit">Profit on termination</label>
+      <select id="dcMode" style="display:none;">
+        <option value="full" data-i18n="deposit_profit_full">Full profit for elapsed period</option>
+        <option value="none" data-i18n="deposit_profit_none">No profit</option>
+        <option value="custom" data-i18n="deposit_profit_custom">Specific amount</option>
+      </select>
+      <button type="button" class="select-trigger" id="dcModeTrigger"><span class="tlabel"></span><span class="chev">▾</span></button>
+    </div>
+    <div class="field" id="dcCustomField" style="display:none;"><label for="dcCustomAmount" data-i18n="deposit_profit_amount">Profit amount</label><input id="dcCustomAmount" type="number" step="any" inputmode="decimal" /></div>
+    <div class="modal-actions"><button class="btn primary" id="confirmDepositCloseBtn" data-i18n="deposit_terminate">Terminate deposit</button></div>
   </div>
 </div>
 
@@ -1749,6 +1796,8 @@ window.__logoNextFallback = function(img){
       deposit_expected_profit:"Expected profit at maturity", deposit_accrued_profit:"Actual profit so far",
       deposit_terminate:"Terminate deposit", deposit_closed:"Closed",
       confirm_terminate_deposit:"Terminate this deposit now and lock in its profit so far?",
+      deposit_termination_date:"Termination date", deposit_termination_profit:"Profit on termination",
+      deposit_profit_full:"Full profit for elapsed period", deposit_profit_none:"No profit", deposit_profit_custom:"Specific amount", deposit_profit_amount:"Profit amount",
       confirm_delete_deposit:"Delete this deposit and its history?",
       enter_deposit_fields:"Enter the deposit amount, start date and term.",
       usd_cash:"Dollar cash", sar_cash:"Riyal cash",
@@ -1822,6 +1871,7 @@ window.__logoNextFallback = function(img){
       portfolio:"Portfolio", transactions:"Transactions", transaction_type:"Transaction type",
       transaction_date:"Transaction date", units:"Units", units_ph:"e.g. 10",
       price_per_unit:"Price per unit", advanced_input:"Advanced transaction input", optional:"optional",
+      edit_realized_title:"Edit realized entry", sell_price:"Sell price", avg_cost_at_sale:"Avg. cost at sale", confirm_delete_realized:"Delete this realized entry?", invested:"Invested",
       transaction_time:"Transaction time", trading_costs:"Trading costs / FX fees", taxes:"Taxes",
       description:"Description", add_note_ph:"Add a personal note", total_amount:"Total amount",
       delete_security:"Delete security", save_add_another:"Save and add another",
@@ -1875,7 +1925,8 @@ window.__logoNextFallback = function(img){
       sector_it:"Information Technology", sector_fin:"Financials", sector_ind:"Industrials",
       sector_cd:"Consumer Discretionary", sector_hc:"Health Care", sector_cs:"Consumer Staples",
       sector_energy:"Energy", sector_materials:"Materials", sector_utilities:"Utilities",
-      sector_re:"Real Estate", sector_comm:"Communication Services", sector_other:"Other",
+      sector_re:"Real Estate", sector_comm:"Communication Services", sector_etf:"ETF", sector_other:"Other",
+      sort_value:"Value (high to low)", sort_name:"Name (A–Z)", sort_ticker:"Ticker (A–Z)", sort_most_profit:"Most profit", sort_most_loss:"Most loss",
       cat_loan:"Loan", cat_cc:"Credit Card", cat_mortgage:"Mortgage", cat_auto:"Auto Loan",
       cat_student:"Student Loan", cat_personal:"Personal Debt", cat_other:"Other Debt",
       txn_buy:"Buy", txn_sell:"Sell", txn_bonus:"Bonus shares",
@@ -1999,6 +2050,8 @@ window.__logoNextFallback = function(img){
       deposit_expected_profit:"الربح المتوقع عند الاستحقاق", deposit_accrued_profit:"الربح الفعلي حتى الآن",
       deposit_terminate:"إنهاء الوديعة", deposit_closed:"منتهية",
       confirm_terminate_deposit:"إنهاء هذه الوديعة الآن وتثبيت ربحها حتى الآن؟",
+      deposit_termination_date:"تاريخ الإنهاء", deposit_termination_profit:"الربح عند الإنهاء",
+      deposit_profit_full:"الربح الكامل للفترة المنقضية", deposit_profit_none:"بدون ربح", deposit_profit_custom:"مبلغ محدد", deposit_profit_amount:"مبلغ الربح",
       confirm_delete_deposit:"حذف هذه الوديعة وسجلها؟",
       enter_deposit_fields:"أدخل مبلغ الوديعة وتاريخ البدء والمدة.",
       usd_cash:"النقد بالدولار", sar_cash:"نقد بالريال",
@@ -2072,6 +2125,7 @@ window.__logoNextFallback = function(img){
       portfolio:"المحفظة", transactions:"المعاملات", transaction_type:"نوع المعاملة",
       transaction_date:"تاريخ المعاملة", units:"الوحدات", units_ph:"مثال: 10",
       price_per_unit:"السعر لكل وحدة", advanced_input:"إدخال متقدم للمعاملة", optional:"اختياري",
+      edit_realized_title:"تعديل المكسب/الخسارة المحققة", sell_price:"سعر البيع", avg_cost_at_sale:"متوسط التكلفة عند البيع", confirm_delete_realized:"هل تريد حذف هذا السجل؟", invested:"المبلغ المستثمر",
       transaction_time:"وقت المعاملة", trading_costs:"تكاليف التداول / رسوم الصرف", taxes:"الضرائب",
       description:"الوصف", add_note_ph:"أضف ملاحظة شخصية", total_amount:"المبلغ الإجمالي",
       delete_security:"حذف السهم", save_add_another:"حفظ وإضافة أخرى",
@@ -2125,7 +2179,8 @@ window.__logoNextFallback = function(img){
       sector_it:"تقنية المعلومات", sector_fin:"القطاع المالي", sector_ind:"الصناعات",
       sector_cd:"السلع الاستهلاكية الكمالية", sector_hc:"الرعاية الصحية", sector_cs:"السلع الاستهلاكية الأساسية",
       sector_energy:"الطاقة", sector_materials:"المواد الخام", sector_utilities:"المرافق العامة",
-      sector_re:"العقارات", sector_comm:"خدمات الاتصالات", sector_other:"أخرى",
+      sector_re:"العقارات", sector_comm:"خدمات الاتصالات", sector_etf:"صناديق تداول (ETF)", sector_other:"أخرى",
+      sort_value:"القيمة (الأعلى أولاً)", sort_name:"الاسم (أ-ي)", sort_ticker:"الرمز (أ-ي)", sort_most_profit:"الأكثر ربحاً", sort_most_loss:"الأكثر خسارة",
       cat_loan:"قرض", cat_cc:"بطاقة ائتمان", cat_mortgage:"رهن عقاري", cat_auto:"قرض سيارة",
       cat_student:"قرض طلابي", cat_personal:"دين شخصي", cat_other:"دين آخر",
       txn_buy:"شراء", txn_sell:"بيع", txn_bonus:"أسهم منحة",
@@ -2237,13 +2292,13 @@ window.__logoNextFallback = function(img){
     "Information Technology":"#00d9b0","Financials":"#00b8d9","Industrials":"#2aa9e0",
     "Consumer Discretionary":"#3d8bff","Health Care":"#5b6bff","Consumer Staples":"#7a5cff",
     "Energy":"#9b5cff","Materials":"#00c2a8","Utilities":"#1fb8d4","Real Estate":"#8a6bff",
-    "Communication Services":"#4d7cff","Other":"#6b6b6f"
+    "Communication Services":"#4d7cff","ETF":"#ff9f43","Other":"#6b6b6f"
   };
   var SECTOR_I18N_KEYS = {
     "Information Technology":"sector_it","Financials":"sector_fin","Industrials":"sector_ind",
     "Consumer Discretionary":"sector_cd","Health Care":"sector_hc","Consumer Staples":"sector_cs",
     "Energy":"sector_energy","Materials":"sector_materials","Utilities":"sector_utilities",
-    "Real Estate":"sector_re","Communication Services":"sector_comm","Other":"sector_other"
+    "Real Estate":"sector_re","Communication Services":"sector_comm","ETF":"sector_etf","Other":"sector_other"
   };
   function sectorLabel(sectorName){
     var key = SECTOR_I18N_KEYS[sectorName];
@@ -2312,26 +2367,26 @@ window.__logoNextFallback = function(img){
     {t:"NEE",n:"NextEra Energy",s:"Utilities",d:"nexteraenergy.com"},
     {t:"DUK",n:"Duke Energy",s:"Utilities",d:"duke-energy.com"},
     {t:"LIN",n:"Linde plc",s:"Materials",d:"linde.com"},
-    {t:"2222.SR",n:"Saudi Aramco",s:"Energy",d:"aramco.com",nAr:"أرامكو السعودية"},
-    {t:"1120.SR",n:"Al Rajhi Bank",s:"Financials",d:"alrajhibank.com.sa",nAr:"مصرف الراجحي"},
-    {t:"2010.SR",n:"SABIC",s:"Materials",d:"sabic.com",nAr:"سابك"},
-    {t:"7010.SR",n:"stc (Saudi Telecom)",s:"Communication Services",d:"stc.com.sa",nAr:"الاتصالات السعودية (إس تي سي)"},
-    {t:"1180.SR",n:"Saudi National Bank",s:"Financials",d:"alahli.com",nAr:"البنك الأهلي السعودي"},
-    {t:"2350.SR",n:"Saudi Kayan",s:"Materials",d:"sabic.com",nAr:"كيان السعودية"},
-    {t:"1211.SR",n:"Ma'aden",s:"Materials",d:"maaden.com.sa",nAr:"معادن"},
-    {t:"2280.SR",n:"Almarai",s:"Consumer Staples",d:"almarai.com",nAr:"المراعي"},
-    {t:"4001.SR",n:"Abdullah Al Othaim Markets",s:"Consumer Staples",d:"othaimmarkets.com",nAr:"أسواق عبدالله العثيم"},
-    {t:"1050.SR",n:"Banque Saudi Fransi",s:"Financials",d:"alfransi.com.sa",nAr:"البنك السعودي الفرنسي"},
-    {t:"1060.SR",n:"Saudi British Bank (SABB)",s:"Financials",d:"sabb.com",nAr:"البنك السعودي البريطاني (ساب)"},
-    {t:"4013.SR",n:"Dr. Sulaiman Al Habib Medical",s:"Health Care",d:"hmg.com",nAr:"مجموعة الدكتور سليمان الحبيب الطبية"},
-    {t:"4030.SR",n:"Bahri",s:"Industrials",d:"bahri.sa",nAr:"البحري"},
-    {t:"7020.SR",n:"Etihad Etisalat (Mobily)",s:"Communication Services",d:"mobily.com.sa",nAr:"اتحاد اتصالات (موبايلي)"},
-    {t:"1210.SR",n:"Basic Chemical Industries Co. (BCI)",s:"Materials",nAr:"شركة الصناعات الكيميائية الأساسية"},
-    {t:"2020.SR",n:"SABIC Agri-Nutrients",s:"Materials",d:"sabic.com",nAr:"سابك للمغذيات الزراعية"},
-    {t:"3050.SR",n:"Southern Province Cement",s:"Materials",d:"spcc.com.sa",nAr:"أسمنت المنطقة الجنوبية"},
-    {t:"4190.SR",n:"Jarir Marketing",s:"Consumer Discretionary",d:"jarir.com",nAr:"جرير للتسويق"},
-    {t:"4200.SR",n:"Aldrees Petroleum",s:"Energy",d:"aldrees.com",nAr:"الدريس للبترول"},
-    {t:"2330.SR",n:"Advanced Petrochemical",s:"Materials",d:"advancedpetrochem.com",nAr:"المتقدمة للبتروكيماويات"},
+    {t:"2222.SR",n:"Saudi Aramco",s:"Energy",d:"aramco.com"},
+    {t:"1120.SR",n:"Al Rajhi Bank",s:"Financials",d:"alrajhibank.com.sa"},
+    {t:"2010.SR",n:"SABIC",s:"Materials",d:"sabic.com"},
+    {t:"7010.SR",n:"stc (Saudi Telecom)",s:"Communication Services",d:"stc.com.sa"},
+    {t:"1180.SR",n:"Saudi National Bank",s:"Financials",d:"alahli.com"},
+    {t:"2350.SR",n:"Saudi Kayan",s:"Materials",d:"sabic.com"},
+    {t:"1211.SR",n:"Ma'aden",s:"Materials",d:"maaden.com.sa"},
+    {t:"2280.SR",n:"Almarai",s:"Consumer Staples",d:"almarai.com"},
+    {t:"4001.SR",n:"Abdullah Al Othaim Markets",s:"Consumer Staples",d:"othaimmarkets.com"},
+    {t:"1050.SR",n:"Banque Saudi Fransi",s:"Financials",d:"alfransi.com.sa"},
+    {t:"1060.SR",n:"Saudi British Bank (SABB)",s:"Financials",d:"sabb.com"},
+    {t:"4013.SR",n:"Dr. Sulaiman Al Habib Medical",s:"Health Care",d:"hmg.com"},
+    {t:"4030.SR",n:"Bahri",s:"Industrials",d:"bahri.sa"},
+    {t:"7020.SR",n:"Etihad Etisalat (Mobily)",s:"Communication Services",d:"mobily.com.sa"},
+    {t:"1210.SR",n:"Basic Chemical Industries Co. (BCI)",s:"Materials"},
+    {t:"2020.SR",n:"SABIC Agri-Nutrients",s:"Materials",d:"sabic.com"},
+    {t:"3050.SR",n:"Southern Province Cement",s:"Materials",d:"spcc.com.sa"},
+    {t:"4190.SR",n:"Jarir Marketing",s:"Consumer Discretionary",d:"jarir.com"},
+    {t:"4200.SR",n:"Aldrees Petroleum",s:"Energy",d:"aldrees.com"},
+    {t:"2330.SR",n:"Advanced Petrochemical",s:"Materials",d:"advancedpetrochem.com"},
     {t:"GOOG",n:"Alphabet Inc. Class C Capital Stock",s:"Information Technology"},{t:"TSM",n:"Taiwan Semiconductor Manufacturing Company Ltd.",s:"Information Technology"},{t:"SPCX",n:"Space Exploration Technologies Corp.",s:"Information Technology"},{t:"AVGO",n:"Broadcom Inc.",s:"Information Technology"},{t:"SKHY",n:"SK hynix Inc.",s:"Information Technology"},{t:"MU",n:"Micron Technology Inc.",s:"Information Technology"},
     {t:"LLY",n:"Eli Lilly and Company",s:"Health Care"},{t:"ASML",n:"ASML Holding N.V. New York Registry Shares",s:"Information Technology"},{t:"GOOGM",n:"Alphabet Inc. Depositary Shares representing a 1/20th Interest in a Share of Series A Mandatory Convertible Preferred Stock",s:"Information Technology"},{t:"GOOGN",n:"Alphabet Inc. Depositary Shares representing a 1/20th Interest in a Share of Series B Mandatory Convertible Preferred Stock",s:"Information Technology"},{t:"PLTR",n:"Palantir Technologies Inc.",s:"Information Technology"},{t:"LRCX",n:"Lam Research Corporation",s:"Information Technology"},
     {t:"AMAT",n:"Applied Materials Inc.",s:"Information Technology"},{t:"HSBC",n:"HSBC Holdings plc.",s:"Financials"},{t:"DELL",n:"Dell Technologies Inc.",s:"Information Technology"},{t:"ARM",n:"Arm Holdings plc",s:"Information Technology"},{t:"PANW",n:"Palo Alto Networks Inc.",s:"Information Technology"},{t:"MS",n:"Morgan Stanley",s:"Financials"},
@@ -2772,26 +2827,26 @@ window.__logoNextFallback = function(img){
     {t:"GHM",n:"Graham Corporation",s:"Industrials"},{t:"ODD",n:"ODDITY Tech Ltd.",s:"Consumer Discretionary"},{t:"ASA",n:"ASA  Gold and Precious Metals Limited",s:"Industrials"},{t:"CRAI",n:"CRA International Inc.",s:"Consumer Discretionary"},{t:"JANX",n:"Janux Therapeutics Inc.",s:"Health Care"},{t:"ANL",n:"Adlai Nortye Group Ltd.",s:"Health Care"},
     {t:"PCRX",n:"Pacira BioSciences Inc.",s:"Health Care"},{t:"BTZ",n:"BlackRock Credit Allocation Income Trust",s:"Financials"},{t:"DSL",n:"DoubleLine Income Solutions Fund Common Shares of Beneficial Interests",s:"Financials"},{t:"UPWK",n:"Upwork Inc.",s:"Information Technology"},{t:"HQH",n:"abrdn Healthcare Investors",s:"Financials"},{t:"CCNE",n:"CNB Financial Corporation",s:"Financials"},
     {t:"DFH",n:"Dream Finders Homes Inc.",s:"Consumer Discretionary"},{t:"ASM",n:"Avino Silver & Gold Mines Ltd. Common Shares (Canada)",s:"Materials"},{t:"IQ",n:"iQIYI Inc.",s:"Consumer Discretionary"},{t:"PRCT",n:"PROCEPT BioRobotics Corporation",s:"Health Care"},{t:"FSCO",n:"FS Credit Opportunities Corp.",s:"Financials"},{t:"MCBS",n:"MetroCity Bankshares Inc.",s:"Financials"},
-    {t:"1010.SR",n:"Riyad Bank",s:"Financials",nAr:"بنك الرياض"},{t:"1020.SR",n:"Bank Al Jazira",s:"Financials",nAr:"بنك الجزيرة"},{t:"1030.SR",n:"The Saudi Investment Bank",s:"Financials",nAr:"البنك السعودي للإستثمار"},{t:"1080.SR",n:"Arab National Bank",s:"Financials",nAr:"البنك العربي الوطني"},{t:"1140.SR",n:"Bank Albilad",s:"Financials",nAr:"بنك البلاد"},{t:"1150.SR",n:"Alinma Bank",s:"Financials",d:"alinma.com",nAr:"مصرف الإنماء"},
-    {t:"2082.SR",n:"ACWA Power",s:"Utilities",nAr:"أكوا باور"},{t:"7030.SR",n:"Zain KSA",s:"Communication Services",nAr:"زين السعودية"},{t:"5110.SR",n:"Saudi Electricity Company",s:"Utilities",nAr:"الكهرباء السعودية"},{t:"4072.SR",n:"MBC Group",s:"Communication Services",nAr:"مجموعة إم بي سي"},{t:"1111.SR",n:"Saudi Tadawul Group",s:"Financials",nAr:"مجموعة تداول السعودية"},{t:"4164.SR",n:"Nahdi Medical Company",s:"Consumer Staples",d:"nahdi.sa",nAr:"النهدي الطبية"},
-    {t:"4004.SR",n:"Dallah Healthcare",s:"Health Care",nAr:"دله الصحية"},{t:"4005.SR",n:"رعاية",s:"Health Care",nAr:"رعاية"},{t:"4009.SR",n:"Al Mouwasat Medical Services",s:"Health Care",nAr:"المواساة"},{t:"4300.SR",n:"Dar Al Arkan Real Estate",s:"Real Estate",nAr:"دار الأركان"},{t:"4250.SR",n:"Jabal Omar Development",s:"Real Estate",nAr:"جبل عمر"},{t:"8010.SR",n:"The Company for Cooperative Insurance (Tawuniya)",s:"Financials",d:"tawuniya.com",nAr:"التعاونية للتأمين"},
-    {t:"8020.SR",n:"MedGulf Insurance",s:"Financials",nAr:"ميدغلف للتأمين"},{t:"8030.SR",n:"ملاذ للتأمين",s:"Financials",nAr:"ملاذ للتأمين"},{t:"8190.SR",n:"Amana Cooperative Insurance",s:"Financials",nAr:"أمانة للتأمين"},{t:"2180.SR",n:"فيبكو",s:"Industrials",nAr:"فيبكو"},{t:"4040.SR",n:"Saudi Airlines Catering",s:"Industrials",nAr:"التموين (سال السعودية حالياً / الخطوط السعودية للتموين)"},{t:"4260.SR",n:"Budget Saudi",s:"Industrials",nAr:"بدجت السعودية"},
-    {t:"3010.SR",n:"Najran Cement",s:"Materials",nAr:"إسمنت حائل"},{t:"3020.SR",n:"Yamama Cement",s:"Materials",nAr:"إسمنت اليمامة"},{t:"3030.SR",n:"Saudi Cement Company",s:"Materials",nAr:"إسمنت السعودية"},{t:"3040.SR",n:"Qassim Cement",s:"Materials",nAr:"إسمنت القصيم"},{t:"3060.SR",n:"Yanbu Cement",s:"Materials",nAr:"إسمنت ينبع"},{t:"3080.SR",n:"Eastern Province Cement",s:"Materials",nAr:"إسمنت الشرقية"},
-    {t:"3090.SR",n:"Tabuk Cement",s:"Materials",nAr:"إسمنت تبوك"},{t:"2190.SR",n:"National Agricultural Development Company (NADEC)",s:"Consumer Staples",nAr:"الشركة الوطنية للتنمية الزراعية (نادك)"},{t:"2270.SR",n:"SADAFCO",s:"Consumer Staples",nAr:"سدافكو"},{t:"4061.SR",n:"أنعام القابضة",s:"Consumer Staples",nAr:"أنعام القابضة"},{t:"4160.SR",n:"Thimar Development Holding",s:"Consumer Staples",nAr:"ثمار"},{t:"4050.SR",n:"SASCO",s:"Consumer Staples",nAr:"ساسكو"},
-    {t:"4170.SR",n:"شمس",s:"Consumer Discretionary",nAr:"شمس"},{t:"4100.SR",n:"مكة للإنشاء",s:"Real Estate",nAr:"مكة للإنشاء"},{t:"4220.SR",n:"إعمار المدينة الاقتصادية",s:"Real Estate",nAr:"إعمار المدينة الاقتصادية"},{t:"4230.SR",n:"Red Sea International",s:"Real Estate",nAr:"البحر الأحمر"},{t:"4290.SR",n:"الخليج للتدريب",s:"Industrials",nAr:"الخليج للتدريب"},{t:"6010.SR",n:"NADEC",s:"Consumer Staples",nAr:"نادك"},
-    {t:"1301.SR",n:"Saudi Cable Company",s:"Industrials",nAr:"أسلاك"},{t:"1302.SR",n:"BAWAN Company",s:"Industrials",nAr:"بوان"},{t:"1303.SR",n:"صناعات كهربائية",s:"Industrials",nAr:"صناعات كهربائية"},{t:"1320.SR",n:"Saudi Steel Pipe Company",s:"Materials",nAr:"أنابيب السعودية"},{t:"1321.SR",n:"East Pipes Integrated Company",s:"Materials",nAr:"أنابيب الشرق"},{t:"2001.SR",n:"Chemanol",s:"Materials",nAr:"كيمانول"},
-    {t:"2040.SR",n:"Saudi Ceramic Company",s:"Industrials",nAr:"الخزف السعودي"},{t:"2060.SR",n:"التصنيع",s:"Materials",nAr:"التصنيع"},{t:"2090.SR",n:"National Gypsum Company",s:"Materials",nAr:"الجبس"},{t:"2110.SR",n:"اللجين",s:"Materials",nAr:"اللجين"},{t:"2120.SR",n:"المتقدمة",s:"Materials",nAr:"المتقدمة"},{t:"2130.SR",n:"صدق",s:"Consumer Discretionary",nAr:"صدق"},
-    {t:"2140.SR",n:"الاحساء (أيان)",s:"Health Care",nAr:"الاحساء (أيان)"},{t:"2150.SR",n:"زجاج",s:"Materials",nAr:"زجاج"},{t:"2170.SR",n:"اليسر (وفرة)",s:"Consumer Staples",nAr:"اليسر (وفرة)"},{t:"2200.SR",n:"المجموعة السعودية",s:"Materials",nAr:"المجموعة السعودية"},{t:"2210.SR",n:"نماء للكيماويات",s:"Materials",nAr:"نماء للكيماويات"},{t:"2230.SR",n:"Saudi Chemical Company",s:"Health Care",nAr:"الشركة الكيميائية السعودية"},
-    {t:"2240.SR",n:"Zamil Industrial Investment",s:"Industrials",nAr:"الزامل للصناعة"},{t:"2250.SR",n:"المجموعة الصناعية (سبكيم)",s:"Materials",nAr:"المجموعة الصناعية (سبكيم)"},{t:"2290.SR",n:"Yanbu National Petrochemical (Yansab)",s:"Materials",nAr:"ينساب"},{t:"2300.SR",n:"Saudi Paper Manufacturing",s:"Materials",nAr:"صناعة الورق"},{t:"2310.SR",n:"Sipchem (Saudi International Petrochemical)",s:"Materials",nAr:"سبكيم العالمية"},{t:"2360.SR",n:"الفخارية",s:"Industrials",nAr:"الفخارية"},
-    {t:"2380.SR",n:"Petro Rabigh",s:"Energy",nAr:"بترورابغ"},{t:"4002.SR",n:"المواساة للخدمات الطبية",s:"Health Care",nAr:"المواساة للخدمات الطبية"},{t:"4003.SR",n:"United Electronics (eXtra)",s:"Consumer Discretionary",d:"extra.com",nAr:"المتحدة للإلكترونيات (إكسترا)"},{t:"4007.SR",n:"Al Hammadi Holding",s:"Health Care",nAr:"الحمادي"},{t:"4011.SR",n:"لازردي",s:"Consumer Discretionary",nAr:"لازردي"},{t:"4020.SR",n:"العقارية",s:"Real Estate",nAr:"العقارية"},
-    {t:"4031.SR",n:"مجموعة سيسكو",s:"Industrials",nAr:"مجموعة سيسكو"},{t:"4080.SR",n:"سنومي ريتيل",s:"Consumer Staples",nAr:"سنومي ريتيل"},{t:"4110.SR",n:"Batic Investments and Logistics",s:"Industrials",nAr:"باتك"},{t:"4130.SR",n:"Al Baha Investment and Development",s:"Financials",nAr:"الباحة"},{t:"4140.SR",n:"ثمار السعودية",s:"Consumer Staples",nAr:"ثمار السعودية"},{t:"4150.SR",n:"المجموعة التعدينية (أنابيب الشرق)",s:"Materials",nAr:"المجموعة التعدينية (أنابيب الشرق)"},
-    {t:"4180.SR",n:"Fitaihi Holding Group",s:"Consumer Discretionary",nAr:"مجموعة فتيحي"},{t:"4210.SR",n:"الأبحاث والإعلام",s:"Communication Services",nAr:"الأبحاث والإعلام"},{t:"4240.SR",n:"فواز الحكير (سنومي ريتيل)",s:"Consumer Staples",nAr:"فواز الحكير (سنومي ريتيل)"},{t:"4310.SR",n:"معرفة (مدينة المعرفة)",s:"Real Estate",nAr:"معرفة (مدينة المعرفة)"},{t:"4321.SR",n:"المراكز (سنومي سنترز)",s:"Real Estate",nAr:"المراكز (سنومي سنترز)"},{t:"6001.SR",n:"Halwani Bros",s:"Consumer Staples",nAr:"حلواني إخوان"},
-    {t:"6002.SR",n:"وفرة",s:"Consumer Staples",nAr:"وفرة"},{t:"6020.SR",n:"Al Qassim Agricultural",s:"Consumer Staples",nAr:"القصيم القابضة"},{t:"6040.SR",n:"Tabuk Agricultural Development",s:"Consumer Staples",nAr:"تبوك الزراعية"},{t:"6050.SR",n:"National Fisheries Company",s:"Consumer Staples",nAr:"الأسماك"},{t:"6060.SR",n:"Sharqiyah Development",s:"Consumer Staples",nAr:"الشرقية للتنمية"},{t:"6070.SR",n:"Al-Jouf Agricultural Development",s:"Consumer Staples",nAr:"الجوف الزراعية"},
-    {t:"6090.SR",n:"جازادكو",s:"Consumer Staples",nAr:"جازادكو"},{t:"7200.SR",n:"المعمر لأنظمة المعلومات",s:"Information Technology",nAr:"المعمر لأنظمة المعلومات"},{t:"7201.SR",n:"بحر العرب",s:"Information Technology",nAr:"بحر العرب"},{t:"7202.SR",n:"Solutions by stc",s:"Information Technology",d:"solutions.com.sa",nAr:"سلوشنز (الشركة العربية لخدمات الإنترنت والاتصالات)"},{t:"7203.SR",n:"Elm",s:"Information Technology",d:"elm.sa",nAr:"علم"},{t:"7204.SR",n:"Tobi",s:"Information Technology",nAr:"توبي (العرض المتقن للخدمات التجارية)"},
-    {t:"8012.SR",n:"الجزيرة تكافل",s:"Financials",nAr:"الجزيرة تكافل"},{t:"8040.SR",n:"Allianz Saudi Fransi Cooperative Insurance",s:"Financials",nAr:"أليانز إس إف"},{t:"8050.SR",n:"Salama Cooperative Insurance",s:"Financials",nAr:"سلامة للتأمين"},{t:"8060.SR",n:"Walaa Cooperative Insurance",s:"Financials",nAr:"ولاء للتأمين"},{t:"8070.SR",n:"الدرع العربي",s:"Financials",nAr:"الدرع العربي"},{t:"8100.SR",n:"SAICO (Saudi Arabian Cooperative Insurance)",s:"Financials",nAr:"سايكو للتأمين"},
-    {t:"8120.SR",n:"اتحاد الخليج الأهلية",s:"Financials",nAr:"اتحاد الخليج الأهلية"},{t:"8150.SR",n:"Ace Arabia (ASIG) Cooperative Insurance",s:"Financials",nAr:"أسيج للتأمين"},{t:"8160.SR",n:"التأمين العربية",s:"Financials",nAr:"التأمين العربية"},{t:"8170.SR",n:"Al-Etihad Cooperative Insurance",s:"Financials",nAr:"الاتحاد للتأمين"},{t:"8180.SR",n:"Al Sagr Cooperative Insurance",s:"Financials",nAr:"الصقر للتأمين"},{t:"8200.SR",n:"Saudi Reinsurance Company",s:"Financials",nAr:"الإعادة السعودية"},
-    {t:"8210.SR",n:"Bupa Arabia",s:"Financials",nAr:"بوبا العربية"},{t:"8230.SR",n:"Al Rajhi Takaful",s:"Financials",nAr:"تكافل الراجحي"},{t:"8240.SR",n:"تشب للتأمين",s:"Financials",nAr:"تشب للتأمين"},{t:"8250.SR",n:"أكسا التعاونية (جي جي إي جي)",s:"Financials",nAr:"أكسا التعاونية (جي جي إي جي)"},{t:"8260.SR",n:"Gulf Union Al Ahlia Cooperative Insurance",s:"Financials",nAr:"الخليجية العامة"},{t:"8270.SR",n:"بروج للتأمين",s:"Financials",nAr:"بروج للتأمين"},
-    {t:"8280.SR",n:"Al Alamiya for Cooperative Insurance",s:"Financials",nAr:"العالمية للتأمين"},{t:"8300.SR",n:"Wataniya Insurance",s:"Financials",nAr:"الوطنية للتأمين"},{t:"8310.SR",n:"أمانة للتأمين",s:"Financials",nAr:"أمانة للتأمين"},{t:"8311.SR",n:"عناية للتأمين",s:"Financials",nAr:"عناية للتأمين"}
+    {t:"1010.SR",n:"Riyad Bank",s:"Financials"},{t:"1020.SR",n:"Bank Al Jazira",s:"Financials"},{t:"1030.SR",n:"The Saudi Investment Bank",s:"Financials"},{t:"1080.SR",n:"Arab National Bank",s:"Financials"},{t:"1140.SR",n:"Bank Albilad",s:"Financials"},{t:"1150.SR",n:"Alinma Bank",s:"Financials",d:"alinma.com"},
+    {t:"2082.SR",n:"ACWA Power",s:"Utilities"},{t:"7030.SR",n:"Zain KSA",s:"Communication Services"},{t:"5110.SR",n:"Saudi Electricity Company",s:"Utilities"},{t:"4072.SR",n:"MBC Group",s:"Communication Services"},{t:"1111.SR",n:"Saudi Tadawul Group",s:"Financials"},{t:"4164.SR",n:"Nahdi Medical Company",s:"Consumer Staples",d:"nahdi.sa"},
+    {t:"4004.SR",n:"Dallah Healthcare",s:"Health Care"},{t:"4005.SR",n:"رعاية",s:"Health Care"},{t:"4009.SR",n:"Al Mouwasat Medical Services",s:"Health Care"},{t:"4300.SR",n:"Dar Al Arkan Real Estate",s:"Real Estate"},{t:"4250.SR",n:"Jabal Omar Development",s:"Real Estate"},{t:"8010.SR",n:"The Company for Cooperative Insurance (Tawuniya)",s:"Financials",d:"tawuniya.com"},
+    {t:"8020.SR",n:"MedGulf Insurance",s:"Financials"},{t:"8030.SR",n:"ملاذ للتأمين",s:"Financials"},{t:"8190.SR",n:"Amana Cooperative Insurance",s:"Financials"},{t:"2180.SR",n:"فيبكو",s:"Industrials"},{t:"4040.SR",n:"Saudi Airlines Catering",s:"Industrials"},{t:"4260.SR",n:"Budget Saudi",s:"Industrials"},
+    {t:"3010.SR",n:"Najran Cement",s:"Materials"},{t:"3020.SR",n:"Yamama Cement",s:"Materials"},{t:"3030.SR",n:"Saudi Cement Company",s:"Materials"},{t:"3040.SR",n:"Qassim Cement",s:"Materials"},{t:"3060.SR",n:"Yanbu Cement",s:"Materials"},{t:"3080.SR",n:"Eastern Province Cement",s:"Materials"},
+    {t:"3090.SR",n:"Tabuk Cement",s:"Materials"},{t:"2190.SR",n:"National Agricultural Development Company (NADEC)",s:"Consumer Staples"},{t:"2270.SR",n:"SADAFCO",s:"Consumer Staples"},{t:"4061.SR",n:"أنعام القابضة",s:"Consumer Staples"},{t:"4160.SR",n:"Thimar Development Holding",s:"Consumer Staples"},{t:"4050.SR",n:"SASCO",s:"Consumer Staples"},
+    {t:"4170.SR",n:"شمس",s:"Consumer Discretionary"},{t:"4100.SR",n:"مكة للإنشاء",s:"Real Estate"},{t:"4220.SR",n:"إعمار المدينة الاقتصادية",s:"Real Estate"},{t:"4230.SR",n:"Red Sea International",s:"Real Estate"},{t:"4290.SR",n:"الخليج للتدريب",s:"Industrials"},{t:"6010.SR",n:"NADEC",s:"Consumer Staples"},
+    {t:"1301.SR",n:"Saudi Cable Company",s:"Industrials"},{t:"1302.SR",n:"BAWAN Company",s:"Industrials"},{t:"1303.SR",n:"صناعات كهربائية",s:"Industrials"},{t:"1320.SR",n:"Saudi Steel Pipe Company",s:"Materials"},{t:"1321.SR",n:"East Pipes Integrated Company",s:"Materials"},{t:"2001.SR",n:"Chemanol",s:"Materials"},
+    {t:"2040.SR",n:"Saudi Ceramic Company",s:"Industrials"},{t:"2060.SR",n:"التصنيع",s:"Materials"},{t:"2090.SR",n:"National Gypsum Company",s:"Materials"},{t:"2110.SR",n:"اللجين",s:"Materials"},{t:"2120.SR",n:"المتقدمة",s:"Materials"},{t:"2130.SR",n:"صدق",s:"Consumer Discretionary"},
+    {t:"2140.SR",n:"الاحساء (أيان)",s:"Health Care"},{t:"2150.SR",n:"زجاج",s:"Materials"},{t:"2170.SR",n:"اليسر (وفرة)",s:"Consumer Staples"},{t:"2200.SR",n:"المجموعة السعودية",s:"Materials"},{t:"2210.SR",n:"نماء للكيماويات",s:"Materials"},{t:"2230.SR",n:"Saudi Chemical Company",s:"Health Care"},
+    {t:"2240.SR",n:"Zamil Industrial Investment",s:"Industrials"},{t:"2250.SR",n:"المجموعة الصناعية (سبكيم)",s:"Materials"},{t:"2290.SR",n:"Yanbu National Petrochemical (Yansab)",s:"Materials"},{t:"2300.SR",n:"Saudi Paper Manufacturing",s:"Materials"},{t:"2310.SR",n:"Sipchem (Saudi International Petrochemical)",s:"Materials"},{t:"2360.SR",n:"الفخارية",s:"Industrials"},
+    {t:"2380.SR",n:"Petro Rabigh",s:"Energy"},{t:"4002.SR",n:"المواساة للخدمات الطبية",s:"Health Care"},{t:"4003.SR",n:"United Electronics (eXtra)",s:"Consumer Discretionary",d:"extra.com"},{t:"4007.SR",n:"Al Hammadi Holding",s:"Health Care"},{t:"4011.SR",n:"لازردي",s:"Consumer Discretionary"},{t:"4020.SR",n:"العقارية",s:"Real Estate"},
+    {t:"4031.SR",n:"مجموعة سيسكو",s:"Industrials"},{t:"4080.SR",n:"سنومي ريتيل",s:"Consumer Staples"},{t:"4110.SR",n:"Batic Investments and Logistics",s:"Industrials"},{t:"4130.SR",n:"Al Baha Investment and Development",s:"Financials"},{t:"4140.SR",n:"ثمار السعودية",s:"Consumer Staples"},{t:"4150.SR",n:"المجموعة التعدينية (أنابيب الشرق)",s:"Materials"},
+    {t:"4180.SR",n:"Fitaihi Holding Group",s:"Consumer Discretionary"},{t:"4210.SR",n:"الأبحاث والإعلام",s:"Communication Services"},{t:"4240.SR",n:"فواز الحكير (سنومي ريتيل)",s:"Consumer Staples"},{t:"4310.SR",n:"معرفة (مدينة المعرفة)",s:"Real Estate"},{t:"4321.SR",n:"المراكز (سنومي سنترز)",s:"Real Estate"},{t:"6001.SR",n:"Halwani Bros",s:"Consumer Staples"},
+    {t:"6002.SR",n:"وفرة",s:"Consumer Staples"},{t:"6020.SR",n:"Al Qassim Agricultural",s:"Consumer Staples"},{t:"6040.SR",n:"Tabuk Agricultural Development",s:"Consumer Staples"},{t:"6050.SR",n:"National Fisheries Company",s:"Consumer Staples"},{t:"6060.SR",n:"Sharqiyah Development",s:"Consumer Staples"},{t:"6070.SR",n:"Al-Jouf Agricultural Development",s:"Consumer Staples"},
+    {t:"6090.SR",n:"جازادكو",s:"Consumer Staples"},{t:"7200.SR",n:"المعمر لأنظمة المعلومات",s:"Information Technology"},{t:"7201.SR",n:"بحر العرب",s:"Information Technology"},{t:"7202.SR",n:"Solutions by stc",s:"Information Technology",d:"solutions.com.sa"},{t:"7203.SR",n:"Elm",s:"Information Technology",d:"elm.sa"},{t:"7204.SR",n:"Tobi",s:"Information Technology"},
+    {t:"8012.SR",n:"الجزيرة تكافل",s:"Financials"},{t:"8040.SR",n:"Allianz Saudi Fransi Cooperative Insurance",s:"Financials"},{t:"8050.SR",n:"Salama Cooperative Insurance",s:"Financials"},{t:"8060.SR",n:"Walaa Cooperative Insurance",s:"Financials"},{t:"8070.SR",n:"الدرع العربي",s:"Financials"},{t:"8100.SR",n:"SAICO (Saudi Arabian Cooperative Insurance)",s:"Financials"},
+    {t:"8120.SR",n:"اتحاد الخليج الأهلية",s:"Financials"},{t:"8150.SR",n:"Ace Arabia (ASIG) Cooperative Insurance",s:"Financials"},{t:"8160.SR",n:"التأمين العربية",s:"Financials"},{t:"8170.SR",n:"Al-Etihad Cooperative Insurance",s:"Financials"},{t:"8180.SR",n:"Al Sagr Cooperative Insurance",s:"Financials"},{t:"8200.SR",n:"Saudi Reinsurance Company",s:"Financials"},
+    {t:"8210.SR",n:"Bupa Arabia",s:"Financials"},{t:"8230.SR",n:"Al Rajhi Takaful",s:"Financials"},{t:"8240.SR",n:"تشب للتأمين",s:"Financials"},{t:"8250.SR",n:"أكسا التعاونية (جي جي إي جي)",s:"Financials"},{t:"8260.SR",n:"Gulf Union Al Ahlia Cooperative Insurance",s:"Financials"},{t:"8270.SR",n:"بروج للتأمين",s:"Financials"},
+    {t:"8280.SR",n:"Al Alamiya for Cooperative Insurance",s:"Financials"},{t:"8300.SR",n:"Wataniya Insurance",s:"Financials"},{t:"8310.SR",n:"أمانة للتأمين",s:"Financials"},{t:"8311.SR",n:"عناية للتأمين",s:"Financials"}
   ];
 
   var state = {
@@ -3101,6 +3156,15 @@ window.__logoNextFallback = function(img){
     if(d.status === "closed") return typeof d.closedProfit === "number" ? d.closedProfit : 0;
     var start = new Date(d.startDate).getTime();
     var elapsedDays = Math.max(0, (Date.now()-start)/86400000);
+    var termDays = depositTermDays(d);
+    elapsedDays = Math.min(elapsedDays, termDays);
+    var years = elapsedDays/365;
+    return (Number(d.principal)||0) * ((Number(d.rate)||0)/100) * years;
+  }
+  function depositAccruedProfitAt(d, atDateStr){
+    var start = new Date(d.startDate).getTime();
+    var at = new Date(atDateStr).getTime();
+    var elapsedDays = Math.max(0, (at-start)/86400000);
     var termDays = depositTermDays(d);
     elapsedDays = Math.min(elapsedDays, termDays);
     var years = elapsedDays/365;
@@ -3604,15 +3668,20 @@ window.__logoNextFallback = function(img){
     return null;
   }
 
+  function chartX(i, n, pad, w){
+    var frac = n>1 ? i/(n-1) : 0;
+    if(uiState.language === "ar") frac = 1 - frac;
+    return pad + frac*(w-pad*2);
+  }
   function drawHomeChartFromPoints(rows){
     var svg = document.getElementById("homeChartSvg");
+    svg.style.direction = "ltr";
     var w=320, h=90, pad=4;
     var values = rows.map(function(r){ return r.value; });
     var maxV = Math.max.apply(null, values), minV = Math.min.apply(null, values);
     var range = Math.max(maxV-minV, 1);
-    var stepX = (w-pad*2)/(values.length-1);
     var coords = values.map(function(v,i){
-      var x = pad + i*stepX;
+      var x = chartX(i, values.length, pad, w);
       var y = h - pad - ((v-minV)/range)*(h-pad*2);
       return [x,y];
     });
@@ -3924,14 +3993,14 @@ window.__logoNextFallback = function(img){
 
   function renderPerfLineChart(indexSeries){
     var svg = document.getElementById("perfLineSvg");
+    svg.style.direction = "ltr";
     if(!indexSeries || indexSeries.length < 2){ svg.innerHTML=""; document.getElementById("perfLineLabels").innerHTML=""; return; }
     var w=320,h=90,pad=4;
     var values = indexSeries.map(function(p){ return p.index; });
     var maxV = Math.max.apply(null, values), minV = Math.min.apply(null, values);
     var range = Math.max(maxV-minV, 0.01);
-    var stepX = (w-pad*2)/(values.length-1);
     var coords = values.map(function(v,i){
-      var x = pad + i*stepX;
+      var x = chartX(i, values.length, pad, w);
       var y = h - pad - ((v-minV)/range)*(h-pad*2);
       return [x,y];
     });
@@ -4144,12 +4213,36 @@ window.__logoNextFallback = function(img){
     var activeHoldingsList = activeHoldings();
     if(activeHoldingsList.length===0){
       investSummary.innerHTML = '<div class="notconnected-card"><div class="nc-icon">◎</div><div class="nc-sub">'+t("empty_invest_not_connected_sub")+'</div></div>';
-      investSummary.onclick = null;
-      investSummary.style.cursor = "default";
     } else {
-      investSummary.innerHTML = '<div class="list-card"><div class="row-card" style="cursor:pointer;"><div class="left"><div class="ticker-line"><span class="ticker">'+activeHoldingsList.length+' '+plural(activeHoldingsList.length,"position_one","position_other")+'</span></div><div class="meta">'+t("across_sectors")+' '+ (new Set(activeHoldingsList.map(function(h){return h.sector;})).size) +' '+t("sectors_word")+'</div></div><div class="right"><div class="val num">'+(uiState.hideAmounts?redactBar("sm"):fmt(iv))+'</div></div></div></div>';
-      investSummary.style.cursor = "pointer";
-      investSummary.onclick = function(){ goToPage("analytics"); };
+      var ownedPortfolioIds = Object.keys(activeHoldingsList.reduce(function(acc,h){ acc[h.portfolioId||"_none"]=true; return acc; }, {}));
+      var portfolioRows = ownedPortfolioIds.map(function(pid){
+        var pfHoldings = activeHoldingsList.filter(function(h){ return (h.portfolioId||"_none") === pid; });
+        var pf = state.portfolios.find(function(x){ return x.id === pid; });
+        var pfName = pf ? pf.name : t("portfolio");
+        var sectors = new Set(pfHoldings.map(function(h){ return h.sector; })).size;
+        var invested = pfHoldings.reduce(function(s,h){ return s + convertAmount(h.shares*h.avgCost, currencyForTicker(h.ticker), state.currency); }, 0);
+        var mv = pfHoldings.reduce(function(s,h){ return s + convertAmount(h.shares*h.currentPrice, currencyForTicker(h.ticker), state.currency); }, 0);
+        var change = mv - invested;
+        var changePct = invested>0 ? (change/invested)*100 : 0;
+        return { id:pid, name:pfName, count:pfHoldings.length, sectors:sectors, invested:invested, mv:mv, change:change, changePct:changePct };
+      });
+      var html = '<div class="list-card">';
+      portfolioRows.forEach(function(row){
+        html += '<div class="row-card" data-pf-summary="'+row.id+'" style="cursor:pointer;">' +
+          '<div class="left"><div class="ticker-line"><span class="ticker">'+escapeHtml(row.name)+'</span></div>' +
+          '<div class="meta">'+row.count+' '+plural(row.count,"position_one","position_other")+' · '+row.sectors+' '+t("sectors_word")+' · '+t("invested")+': '+(uiState.hideAmounts?redactBar("sm"):fmt(row.invested))+'</div></div>' +
+          '<div class="right"><div class="val num">'+(uiState.hideAmounts?redactBar("sm"):fmt(row.mv))+'</div>' +
+          '<div class="gain num" style="color:'+(row.change>=0?"var(--green)":"var(--red)")+'">'+(uiState.hideAmounts?"":fmtPct(row.changePct)+' · '+(row.change>=0?"+":"")+fmt(row.change))+'</div></div></div>';
+      });
+      html += '</div>';
+      investSummary.innerHTML = html;
+      investSummary.querySelectorAll('[data-pf-summary]').forEach(function(el){
+        el.addEventListener("click", function(){
+          selectedPortfolioId = el.dataset.pfSummary;
+          goToPage("analytics");
+          renderAnalyticsForPortfolio();
+        });
+      });
     }
 
     var cashList = document.getElementById("nwCashList");
@@ -4455,6 +4548,7 @@ window.__logoNextFallback = function(img){
   function activeHoldings(){
     return state.holdings.filter(function(h){ return h.shares > 1e-9; });
   }
+  var holdingsSortMode = "value_desc";
   function renderHoldings(){
     renderPortfolioChips();
     var cashCard = document.getElementById("portfolioCashCard");
@@ -4481,6 +4575,17 @@ window.__logoNextFallback = function(img){
       return;
     }
     filtered.slice().sort(function(a,b){
+      if(holdingsSortMode === "name_asc"){
+        return (stockDisplayName(a.ticker,a.name)||a.ticker).localeCompare(stockDisplayName(b.ticker,b.name)||b.ticker);
+      }
+      if(holdingsSortMode === "ticker_asc"){
+        return a.ticker.localeCompare(b.ticker);
+      }
+      if(holdingsSortMode === "gain_desc" || holdingsSortMode === "gain_asc"){
+        var aGain = a.avgCost>0 ? ((a.currentPrice-a.avgCost)/a.avgCost) : 0;
+        var bGain = b.avgCost>0 ? ((b.currentPrice-b.avgCost)/b.avgCost) : 0;
+        return holdingsSortMode === "gain_desc" ? (bGain-aGain) : (aGain-bGain);
+      }
       return convertAmount(b.shares*b.currentPrice, currencyForTicker(b.ticker), state.currency) - convertAmount(a.shares*a.currentPrice, currencyForTicker(a.ticker), state.currency);
     }).forEach(function(h){
       var curr = currencyForTicker(h.ticker);
@@ -4555,11 +4660,21 @@ window.__logoNextFallback = function(img){
   });
 
   // ---------- ANALYTICS: Allocation ----------
-  function computePortfolioHealth(){
-    var invest = investTotal(), cash = cashTotal(), liab = liabTotal();
+  function computePortfolioHealth(portfolioId){
+    var scoped = portfolioId && portfolioId !== "all";
+    var activeH = scoped ? activeHoldings().filter(function(h){ return h.portfolioId === portfolioId; }) : activeHoldings();
+    var invest = activeH.reduce(function(s,h){ return s + convertAmount(h.shares*h.currentPrice, currencyForTicker(h.ticker), state.currency); }, 0);
+    var cash, liab;
+    if(scoped){
+      var pf = state.portfolios.find(function(x){ return x.id === portfolioId; });
+      cash = pf ? convertAmount(pf.cashBalance||0, pf.cashCurrency||"$", state.currency) : 0;
+      liab = 0;
+    } else {
+      cash = cashTotal();
+      liab = liabTotal();
+    }
     var assets = invest + cash;
     var nw = assets - liab;
-    var activeH = activeHoldings();
     if(activeH.length === 0 && cash <= 0){
       return { score:0, hasData:false, note:t("health_no_data") };
     }
@@ -4578,19 +4693,23 @@ window.__logoNextFallback = function(img){
     if(hc >= 8) holdScore = 15; else if(hc >= 5) holdScore = 11; else if(hc >= 3) holdScore = 7; else if(hc >= 1) holdScore = 3; else holdScore = 0;
     var cashRatio = nw > 0 ? cash/nw : (cash > 0 ? 1 : 0);
     if(cashRatio >= 0.1 && cashRatio <= 0.4) cashScore = 20; else if(cashRatio >= 0.05 && cashRatio < 0.6) cashScore = 12; else cashScore = 5;
-    var debtRatio = assets > 0 ? liab/assets : (liab > 0 ? 1 : 0);
-    if(debtRatio <= 0.1) debtScore = 25; else if(debtRatio <= 0.3) debtScore = 18; else if(debtRatio <= 0.5) debtScore = 10; else debtScore = 3;
+    if(scoped){
+      debtScore = 25;
+    } else {
+      var debtRatio = assets > 0 ? liab/assets : (liab > 0 ? 1 : 0);
+      if(debtRatio <= 0.1) debtScore = 25; else if(debtRatio <= 0.3) debtScore = 18; else if(debtRatio <= 0.5) debtScore = 10; else debtScore = 3;
+    }
 
     var total = divScore + concScore + holdScore + cashScore + debtScore;
 
     var note;
     var scores = [
-      { key:"health_improve_debt", val:debtScore, max:25 },
       { key:"health_improve_concentration", val:concScore, max:20 },
       { key:"health_improve_cash", val:cashScore, max:20 },
       { key:"health_improve_sectors", val:divScore, max:20 },
       { key:"health_improve_holdings", val:holdScore, max:15 }
     ];
+    if(!scoped) scores.push({ key:"health_improve_debt", val:debtScore, max:25 });
     scores.sort(function(a,b){ return (a.val/a.max) - (b.val/b.max); });
     if(scores[0].val/scores[0].max >= 0.75){
       note = t("health_great");
@@ -4600,7 +4719,7 @@ window.__logoNextFallback = function(img){
     return { score: Math.round(total), hasData:true, note: note };
   }
   function renderHealthScore(){
-    var h = computePortfolioHealth();
+    var h = computePortfolioHealth(selectedPortfolioId);
     var circumference = 170;
     var offset = circumference - (h.score/100)*circumference;
     var ring = document.getElementById("healthScoreRing");
@@ -4722,9 +4841,66 @@ window.__logoNextFallback = function(img){
       var row = document.createElement("div"); row.className = "row-card"; row.style.cursor = "default";
       row.innerHTML = '<div class="left" style="display:flex; flex-direction:row; align-items:center; gap:10px;">'+logoSpanHtml(r.ticker, 32, r.name)+'<div><div class="ticker-line"><span class="ticker">'+escapeHtml(r.ticker)+'</span><span class="name">'+escapeHtml(r.name||"")+'</span></div><div class="meta">'+dateStr+' · '+r.units+' '+t("unit_sh")+' @ '+fmt(r.sellPrice)+'</div></div></div>' +
         '<div class="right"><div class="val num" style="color:'+(r.gain>=0?"var(--green)":"var(--red)")+'">'+(r.gain>=0?"+":"")+fmt(r.gain)+'</div></div>';
+      row.style.cursor = "pointer";
+      row.addEventListener("click", function(){ openRealizedEditModal(r.id); });
       list.appendChild(row);
     });
   }
+
+  // ---------- Realized P&L edit modal ----------
+  var realizedEditOverlay = document.getElementById("realizedEditOverlay");
+  var editingRealizedId = null;
+  function openRealizedEditModal(id){
+    var r = state.realizedPnL.find(function(x){ return x.id === id; });
+    if(!r) return;
+    editingRealizedId = id;
+    var validDate = r.date && !isNaN(new Date(r.date).getTime());
+    document.getElementById("rzDate").value = validDate ? new Date(r.date).toISOString().slice(0,10) : "";
+    document.getElementById("rzUnits").value = r.units;
+    document.getElementById("rzSellPrice").value = r.sellPrice;
+    document.getElementById("rzAvgCost").value = r.avgCostAtSale;
+    realizedEditOverlay.classList.add("open");
+  }
+  document.getElementById("closeRealizedEditModal").addEventListener("click", function(){ realizedEditOverlay.classList.remove("open"); });
+  realizedEditOverlay.addEventListener("click", function(e){ if(e.target===realizedEditOverlay) realizedEditOverlay.classList.remove("open"); });
+  document.getElementById("saveRealizedBtn").addEventListener("click", function(){
+    if(!editingRealizedId) return;
+    var r = state.realizedPnL.find(function(x){ return x.id === editingRealizedId; });
+    if(!r) return;
+    var date = document.getElementById("rzDate").value;
+    var units = parseFloat(document.getElementById("rzUnits").value);
+    var sellPrice = parseFloat(document.getElementById("rzSellPrice").value);
+    var avgCost = parseFloat(document.getElementById("rzAvgCost").value);
+    if(!date || isNaN(units) || isNaN(sellPrice) || isNaN(avgCost)){ showNotice(t("enter_date_amount")); return; }
+    r.date = date; r.units = units; r.sellPrice = sellPrice; r.avgCostAtSale = avgCost;
+    r.proceeds = units*sellPrice;
+    r.costBasis = units*avgCost;
+    r.gain = r.proceeds - r.costBasis;
+    var h = state.holdings.find(function(x){ return x.id === r.holdingId; });
+    if(h && h.transactions){
+      var tx = h.transactions.find(function(x){ return x.id === r.txnId; });
+      if(tx){ tx.date = date; tx.units = units; tx.pricePerUnit = sellPrice; recalcHoldingStats(h); }
+    }
+    save(); realizedEditOverlay.classList.remove("open");
+    renderAll();
+  });
+  document.getElementById("deleteRealizedBtn").addEventListener("click", function(){
+    if(!editingRealizedId) return;
+    openConfirm(t("confirm_delete_realized")).then(function(ok){
+      if(!ok) return;
+      var r = state.realizedPnL.find(function(x){ return x.id === editingRealizedId; });
+      if(r){
+        var h = state.holdings.find(function(x){ return x.id === r.holdingId; });
+        if(h && h.transactions){
+          h.transactions = h.transactions.filter(function(x){ return x.id !== r.txnId; });
+          recalcHoldingStats(h);
+        }
+      }
+      state.realizedPnL = state.realizedPnL.filter(function(x){ return x.id !== editingRealizedId; });
+      save(); realizedEditOverlay.classList.remove("open");
+      renderAll();
+    });
+  });
 
   // ---------- Annual report ----------
   function getAnnualReportYears(){
@@ -4887,13 +5063,19 @@ window.__logoNextFallback = function(img){
     var monthNames = uiState.language === "ar"
       ? ["ينا","فبر","مار","أبر","ماي","يون","يول","أغس","سبت","أكت","نوف","ديس"]
       : ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    var monthNamesFull = uiState.language === "ar"
+      ? ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"]
+      : ["January","February","March","April","May","June","July","August","September","October","November","December"];
     var byMonth=new Array(12).fill(0);
     filtered.forEach(function(d){ byMonth[new Date(d.date).getMonth()] += Number(d.amount); });
     var max=Math.max.apply(null, byMonth.concat([0.01]));
     byMonth.forEach(function(v,i){
-      var col=document.createElement("div"); col.className="bar-col";
+      var col=document.createElement("div"); col.className="bar-col"; col.style.cursor="pointer";
       var h=Math.max((v/max)*84, v>0?4:2);
       col.innerHTML='<div class="bar" style="height:'+h+'px"></div><div class="mlabel">'+monthNames[i]+'</div>';
+      col.addEventListener("click", function(){
+        showNotice(monthNamesFull[i] + ": " + fmt(v));
+      });
       chart.appendChild(col);
     });
   }
@@ -5094,13 +5276,13 @@ window.__logoNextFallback = function(img){
     }
 
     var svg = document.getElementById("projSvg");
+    svg.style.direction = "ltr";
     var w=320, h=130, pad=6;
     var maxV = Math.max.apply(null, points.concat([1]));
     var minV = Math.min.apply(null, points.concat([0]));
     var range = Math.max(maxV-minV, 1);
-    var stepX = (w-pad*2)/(points.length-1);
     var coords = points.map(function(v,i){
-      var x = pad + i*stepX;
+      var x = chartX(i, points.length, pad, w);
       var y = h - pad - ((v-minV)/range)*(h-pad*2);
       return [x,y];
     });
@@ -5173,10 +5355,11 @@ window.__logoNextFallback = function(img){
     txns.slice().sort(function(a,b){ return new Date(b.date)-new Date(a.date); }).forEach(function(tx){
       var dateStr = new Date(tx.date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
       var total = tx.units*tx.pricePerUnit + (tx.fees||0) + (tx.taxes||0);
+      var hCur = currencyForTicker(h.ticker);
       var row = document.createElement("div"); row.className = "liab-txn-row";
       row.innerHTML =
-        '<div class="ltr-left"><span class="ltr-type '+(tx.type==="sell"?"borrowed":"repayment")+'">'+t(HOLD_TXN_LABELS[tx.type])+'</span><span class="ltr-date">'+dateStr+" · "+tx.units+" @ "+fmt(tx.pricePerUnit)+'</span></div>' +
-        '<span class="ltr-amt '+(tx.type==="buy"?"borrowed":"repayment")+'">'+fmt(total)+'</span>' +
+        '<div class="ltr-left"><span class="ltr-type '+(tx.type==="sell"?"borrowed":"repayment")+'">'+t(HOLD_TXN_LABELS[tx.type])+'</span><span class="ltr-date">'+dateStr+" · "+tx.units+" @ "+fmtIn(tx.pricePerUnit, hCur)+'</span></div>' +
+        '<span class="ltr-amt '+(tx.type==="buy"?"borrowed":"repayment")+'">'+fmtIn(total, hCur)+'</span>' +
         '<button class="ltr-del" aria-label="Delete transaction">×</button>';
       row.querySelector(".ltr-del").addEventListener("click", function(){
         h.transactions = h.transactions.filter(function(x){ return x.id !== tx.id; });
@@ -5685,18 +5868,18 @@ window.__logoNextFallback = function(img){
     svgId = svgId || "detailChartSvg"; labelsId = labelsId || "detailChartLabels";
     var tooltipPrefix = svgId === "siChartSvg" ? "si" : "detail";
     var svg = document.getElementById(svgId);
+    svg.style.direction = "ltr";
     var w=320, h2=70, pad=8;
     var points = rawPoints.filter(function(p){
       var t = new Date(p.date).getTime();
       return !isNaN(t) && t > 31536000000 && typeof p.price === "number" && isFinite(p.price) && p.price > 0;
-    });
+    }).sort(function(a,b){ return new Date(a.date) - new Date(b.date); });
     if(points.length < 2){ return false; }
     var prices = points.map(function(p){ return p.price; });
     var minP = Math.min.apply(null, prices), maxP = Math.max.apply(null, prices);
     var range = maxP - minP || 1;
-    var stepX = (w - pad*2) / (points.length - 1);
     var coords = points.map(function(p, i){
-      var x = pad + i*stepX;
+      var x = chartX(i, points.length, pad, w);
       var y = pad + (1 - (p.price - minP)/range) * (h2 - pad*2);
       return [x, y];
     });
@@ -6007,7 +6190,16 @@ window.__logoNextFallback = function(img){
     editingDivId = null;
     document.getElementById("deleteDivBtn").style.display = "none";
     var sel=document.getElementById("dHolding"); sel.innerHTML="";
-    state.holdings.forEach(function(h){
+    var filterPid = null;
+    if(preselectId){
+      var ph = state.holdings.find(function(x){ return x.id === preselectId; });
+      filterPid = ph ? ph.portfolioId : null;
+    } else if(selectedPortfolioId && selectedPortfolioId !== "all"){
+      filterPid = selectedPortfolioId;
+    }
+    var holdingsForSelect = filterPid ? state.holdings.filter(function(h){ return h.portfolioId === filterPid; }) : state.holdings;
+    if(holdingsForSelect.length === 0) holdingsForSelect = state.holdings;
+    holdingsForSelect.forEach(function(h){
       var opt=document.createElement("option"); opt.value=h.id; opt.textContent=h.ticker+(h.name?" — "+h.name:"");
       sel.appendChild(opt);
     });
@@ -6028,7 +6220,11 @@ window.__logoNextFallback = function(img){
     editingDivId = divId;
     document.getElementById("deleteDivBtn").style.display = "block";
     var sel=document.getElementById("dHolding"); sel.innerHTML="";
-    state.holdings.forEach(function(h){
+    var curHolding = state.holdings.find(function(x){ return x.id === d.holdingId; });
+    var filterPid = curHolding ? curHolding.portfolioId : null;
+    var holdingsForSelect = filterPid ? state.holdings.filter(function(h){ return h.portfolioId === filterPid; }) : state.holdings;
+    if(holdingsForSelect.length === 0) holdingsForSelect = state.holdings;
+    holdingsForSelect.forEach(function(h){
       var opt=document.createElement("option"); opt.value=h.id; opt.textContent=h.ticker+(h.name?" — "+h.name:"");
       sel.appendChild(opt);
     });
@@ -6046,6 +6242,28 @@ window.__logoNextFallback = function(img){
   document.getElementById("addDivBtn").addEventListener("click", function(){ openDividendModal(null); });
   document.getElementById("closeDivModal").addEventListener("click", function(){divOverlay.classList.remove("open");});
   divOverlay.addEventListener("click", function(e){ if(e.target===divOverlay) divOverlay.classList.remove("open"); });
+  function reverseDividendCashCredit(d){
+    if(!d || !d.creditInfo) return;
+    var p = state.portfolios.find(function(x){ return x.id === d.creditInfo.portfolioId; });
+    if(p){
+      p.cashBalance = (p.cashBalance||0) - d.creditInfo.amount;
+      p.cashTransactions = (p.cashTransactions||[]).filter(function(x){ return x.id !== d.creditInfo.txnId; });
+    }
+    d.creditInfo = null;
+  }
+  function creditDividendToPortfolioCash(holdingId, amount, dateStr){
+    var h = state.holdings.find(function(x){ return x.id === holdingId; });
+    if(!h || !h.portfolioId) return null;
+    var p = state.portfolios.find(function(x){ return x.id === h.portfolioId; });
+    if(!p) return null;
+    var cur = currencyForTicker(h.ticker);
+    var creditAmt = convertAmount(amount, cur, p.cashCurrency || cur);
+    if(!p.cashTransactions) p.cashTransactions = [];
+    p.cashBalance = (p.cashBalance||0) + creditAmt;
+    var txnId = uid();
+    p.cashTransactions.push({ id:txnId, type:"deposit", amount:creditAmt, date:dateStr, note:"dividend" });
+    return { portfolioId:p.id, txnId:txnId, amount:creditAmt };
+  }
   document.getElementById("saveDivBtn").addEventListener("click", function(){
     var holdingId=document.getElementById("dHolding").value;
     var date=document.getElementById("dDate").value;
@@ -6054,9 +6272,15 @@ window.__logoNextFallback = function(img){
     if(!date||isNaN(amount)||amount<=0){ showNotice(t("enter_date_amount")); return; }
     if(editingDivId){
       var existing = state.dividends.find(function(x){ return x.id === editingDivId; });
-      if(existing){ existing.holdingId=holdingId; existing.date=date; existing.amount=amount; existing.status=status; }
+      if(existing){
+        reverseDividendCashCredit(existing);
+        existing.holdingId=holdingId; existing.date=date; existing.amount=amount; existing.status=status;
+        if(status==="paid"){ existing.creditInfo = creditDividendToPortfolioCash(holdingId, amount, date); }
+      }
     } else {
-      state.dividends.push({id:uid(),holdingId:holdingId,date:date,amount:amount,status:status});
+      var newDiv = {id:uid(),holdingId:holdingId,date:date,amount:amount,status:status,creditInfo:null};
+      if(status==="paid"){ newDiv.creditInfo = creditDividendToPortfolioCash(holdingId, amount, date); }
+      state.dividends.push(newDiv);
     }
     save(); divOverlay.classList.remove("open");
     selectedYear = new Date(date).getFullYear();
@@ -6067,6 +6291,8 @@ window.__logoNextFallback = function(img){
     if(!editingDivId) return;
     openConfirm(t("confirm_delete_dividend")).then(function(ok){
       if(!ok) return;
+      var toDelete = state.dividends.find(function(x){ return x.id === editingDivId; });
+      if(toDelete) reverseDividendCashCredit(toDelete);
       state.dividends = state.dividends.filter(function(x){ return x.id !== editingDivId; });
       save(); divOverlay.classList.remove("open");
       renderDividendsTab();
@@ -6291,6 +6517,7 @@ window.__logoNextFallback = function(img){
 
   // ---------- Real estate fund modal ----------
   var editingREId = null;
+  var editingReTxnId = null;
   var pendingRECurrency = "$";
   var reOverlay = document.getElementById("reOverlay");
   function refreshReCurrencyChip(currency){
@@ -6317,14 +6544,26 @@ window.__logoNextFallback = function(img){
     list.innerHTML = "";
     txns.slice().sort(function(a,b){ return new Date(b.date)-new Date(a.date); }).forEach(function(tx){
       var dateStr = new Date(tx.date).toLocaleDateString(localeCode(),{month:"short",day:"numeric",year:"numeric"});
-      var row = document.createElement("div"); row.className = "liab-txn-row";
+      var row = document.createElement("div"); row.className = "liab-txn-row"; row.style.cursor = "pointer";
       var unitsNote = tx.type !== "rental" ? (" · "+tx.units+" "+t("units")) : "";
       row.innerHTML =
         '<div class="ltr-left"><span class="ltr-type '+RE_CLASS[tx.type]+'">'+t(RE_LABELS[tx.type])+'</span><span class="ltr-date">'+dateStr+unitsNote+'</span></div>' +
         '<span class="ltr-amt '+RE_CLASS[tx.type]+'">'+(tx.type==="sell"||tx.type==="rental"?"+":"-")+fmtIn(tx.amount, f.currency)+'</span>' +
         '<button class="ltr-del" aria-label="Delete transaction">×</button>';
+      row.addEventListener("click", function(e){
+        if(e.target.classList.contains("ltr-del")) return;
+        editingReTxnId = tx.id;
+        document.getElementById("reTxnType").value = tx.type;
+        syncTriggerLabel("reTxnType", "reTxnTypeTrigger");
+        document.getElementById("reUnitsField").style.display = (tx.type === "rental") ? "none" : "block";
+        document.getElementById("reDate").value = new Date(tx.date).toISOString().slice(0,10);
+        document.getElementById("reUnits").value = tx.units || "";
+        document.getElementById("reAmount").value = tx.amount;
+        updateReValuePreview();
+      });
       row.querySelector(".ltr-del").addEventListener("click", function(){
         f.transactions = f.transactions.filter(function(x){ return x.id !== tx.id; });
+        if(editingReTxnId === tx.id) editingReTxnId = null;
         save();
         renderReTxnHistory(f);
         updateReValuePreview();
@@ -6352,6 +6591,7 @@ window.__logoNextFallback = function(img){
   });
   function openReModal(id){
     editingREId = id || null;
+    editingReTxnId = null;
     var delBtn = document.getElementById("deleteReBtn");
     document.getElementById("reTxnType").value = "buy";
     syncTriggerLabel("reTxnType", "reTxnTypeTrigger");
@@ -6406,7 +6646,17 @@ window.__logoNextFallback = function(img){
       editingREId = f.id;
     }
     if(!f.transactions) f.transactions = [];
-    if(type === "rental"){
+    if(editingReTxnId){
+      var existingTx = f.transactions.find(function(x){ return x.id === editingReTxnId; });
+      if(existingTx){
+        if(type === "rental"){
+          if(!isNaN(amount) && amount>0 && date){ existingTx.type="rental"; existingTx.units=0; existingTx.amount=amount; existingTx.date=date; }
+        } else {
+          if(!isNaN(units) && units>0 && !isNaN(amount) && amount>0 && date){ existingTx.type=type; existingTx.units=units; existingTx.amount=amount; existingTx.date=date; }
+        }
+      }
+      editingReTxnId = null;
+    } else if(type === "rental"){
       if(!isNaN(amount) && amount>0 && date){
         f.transactions.push({ id:uid(), type:"rental", units:0, amount:amount, date:date });
       }
@@ -6524,16 +6774,42 @@ window.__logoNextFallback = function(img){
     }
     save(); depositOverlay.classList.remove("open"); renderAll();
   });
+  var depositCloseOverlay = document.getElementById("depositCloseOverlay");
   document.getElementById("closeDepositBtn").addEventListener("click", function(){
     if(!editingDepositId) return;
-    openConfirm(t("confirm_terminate_deposit")).then(function(ok){
-      if(!ok) return;
-      var d = state.deposits.find(function(x){return x.id===editingDepositId;});
-      d.closedProfit = depositAccruedProfit(d);
-      d.status = "closed";
-      d.closedDate = new Date().toISOString().slice(0,10);
-      save(); depositOverlay.classList.remove("open"); renderAll();
-    });
+    document.getElementById("dcDate").value = new Date().toISOString().slice(0,10);
+    document.getElementById("dcMode").value = "full";
+    syncTriggerLabel("dcMode", "dcModeTrigger");
+    document.getElementById("dcCustomField").style.display = "none";
+    document.getElementById("dcCustomAmount").value = "";
+    depositCloseOverlay.classList.add("open");
+  });
+  document.getElementById("closeDepositCloseModal").addEventListener("click", function(){ depositCloseOverlay.classList.remove("open"); });
+  depositCloseOverlay.addEventListener("click", function(e){ if(e.target===depositCloseOverlay) depositCloseOverlay.classList.remove("open"); });
+  document.getElementById("dcMode").addEventListener("change", function(){
+    document.getElementById("dcCustomField").style.display = this.value === "custom" ? "block" : "none";
+  });
+  document.getElementById("confirmDepositCloseBtn").addEventListener("click", function(){
+    if(!editingDepositId) return;
+    var d = state.deposits.find(function(x){return x.id===editingDepositId;});
+    if(!d) return;
+    var termDate = document.getElementById("dcDate").value;
+    if(!termDate){ showNotice(t("enter_date_amount")); return; }
+    var mode = document.getElementById("dcMode").value;
+    var profit;
+    if(mode === "none"){
+      profit = 0;
+    } else if(mode === "custom"){
+      var custom = parseFloat(document.getElementById("dcCustomAmount").value);
+      if(isNaN(custom)){ showNotice(t("enter_date_amount")); return; }
+      profit = custom;
+    } else {
+      profit = depositAccruedProfitAt(d, termDate);
+    }
+    d.closedProfit = profit;
+    d.status = "closed";
+    d.closedDate = termDate;
+    save(); depositCloseOverlay.classList.remove("open"); depositOverlay.classList.remove("open"); renderAll();
   });
   document.getElementById("deleteDepositBtn").addEventListener("click", function(){
     if(!editingDepositId) return;
@@ -6993,6 +7269,12 @@ window.__logoNextFallback = function(img){
   wireCustomSelect("reTxnType", "reTxnTypeTrigger", "Transaction type");
   wireCustomSelect("depTermUnit", "depTermUnitTrigger", "Term unit");
   wireCustomSelect("efAccount", "efAccountTrigger", "Linked account");
+  wireCustomSelect("holdingsSortSelect", "holdingsSortSelectTrigger", "Sort");
+  wireCustomSelect("dcMode", "dcModeTrigger", "Profit on termination");
+  document.getElementById("holdingsSortSelect").addEventListener("change", function(){
+    holdingsSortMode = this.value;
+    renderHoldings();
+  });
   document.getElementById("dHoldingTrigger").addEventListener("click", function(){
     var select = document.getElementById("dHolding");
     openPicker("Holding", optionsFromSelect(select), select.value).then(function(value){
